@@ -6,6 +6,9 @@ Subject.pdf
 *.out
 *.toc
 *.pdf
+*.fdb_latexmk
+*.fls
+*.synctex.gz
 
 # Prerequisites
 *.d
