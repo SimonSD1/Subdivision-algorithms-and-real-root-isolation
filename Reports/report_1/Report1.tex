@@ -75,4 +75,34 @@ Together, we have
 \[Z(f) \leq Z(f')+1 = V(f') -2s +1 \leq V(f) -2s+1 \leq V(f+1)\]
 Further, since \(Z(f)\) and \(V(f)\) have the same parity, we have \(Z(f) \leq V(f)\).
 
+\section{Algorithms}
+
+The goals of those algorithms is to compute \(f(x+a)\), for \(f\) a polynomial and \(a\) an integer.
+
+\subsection{Classical polynomial arithmetic}
+
+\begin{itemize}
+    \item Horner's method: \(g(x)=f_0 + (x+a) (f_1+...+(x+a)f_n...)\), it takes n step.
+
+    \item Show and Traub's method: 
+    \(f^{*}=f(ax)\)
+    Compute \(g^{*}=f^{*}(x+1)=f(a(x+1))\) Using Horner's method
+    and then \(g=g^{*}(x/a)=f(a(x/a + 1)) = f(x+a)\).
+
+    \item Multiplication free method: call multiple Horner with a shift of ith bit of a for th ith call.
+\end{itemize}
+
+\subsection{Asymptotically fast methods}
+\begin{itemize}
+    \item Paterson and Stockmeyer's: 
+            \begin{itemize}
+                \item Compute \((x+a)^i\) for \(1<i \leq m\) : \(O(m), m=\sqrt{n+1}\)
+                \item For \(0 \leq i < m\), compute \(f^{(i)}(x+a)\)
+            \end{itemize}
+\end{itemize}
+
+
+
+
+
 \end{document}
