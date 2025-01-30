@@ -36,7 +36,7 @@ Using the method described above to study the roots on different intervals, we w
 \end{itemize}
 
 \subsection*{Role of the Taylor Shifts}
-When doing the substitution \(x \rightarrow \frac{1}{y+1}\), we will only need to perform a Taylor Shifts, since doing \(f(\frac{1}{x})\) does not require any operations. Indeed, for a polynomial \(f = (f_0,....,f_d)\) :
+When doing the substitution \(x \rightarrow \frac{1}{y+1}\), we will only need to perform a Taylor Shift, since doing \(f(\frac{1}{x})\) does not require any operations. Indeed, for a polynomial \(f = (f_0,....,f_d)\) :
 \[
   f(\frac{1}{x}) = \frac{f_0x^d + f_1x^{d-1} + .... + f_d}{x^d}
 \]
@@ -45,7 +45,7 @@ When doing the substitution \(x \rightarrow \frac{1}{y+1}\), we will only need t
 For specific values of x, verifiyng the number of real positive roots does not require any operations :
 \begin{itemize}
   \item \(x = 0\), we only need to know if the least significant coefficient is zero
-  \item \(x= 1\)
+  \item \(x= 1\), we only need to summ the coefficients
 \end{itemize}
 
 \section{Tasks for next reunion}
@@ -58,11 +58,12 @@ Measure the performance by changing :
     \item the degree, with fixed coefficients size
     \item the coefficients size (up to thousands of bit), with fixed degree
 \end{itemize}
+Deduce which algorithms are used for the flint polynomial multiplication operation (naive, Karatsuba, Cantor and Kaltofen...).
 
 \subsection*{Search and suggest}
 \begin{itemize}
   \item Function \(Bound(\underline{f})\) for bounding a polynomial's real positive roots
-  \item Fast way of computing \(f(\frac{1}{2})\), similar way to \(f(1)\) and \(f(0)\), only using shifts
+  \item Fast way of computing \(f(\frac{1}{2})\), similar to \(f(1)\) and \(f(0)\), only using shifts
 \end{itemize}
 
 \subsection*{Understand, learn and be able to redo on board}
