@@ -16,23 +16,27 @@
 
 \maketitle
 
-\section{Recap of reunion}
+\section{Recap of the reunion}
 
 \subsection*{Studying roots of a polynomial on different intervals}
 
-For a polynomial (written as an array) \( f = (f_0,....,f_d) \in \mathbb{Z}^{d+1} \), we can bound its maximum real positive root with a function \( Bound(\underline{f}) = B = 2^k\) (with B a power of 2).\\
-By performing operations on \(x\), we can reduce the interval bounding the roots \([0,B]\) to a new interval.\\
-\\
-For example, by substituting \(x\) by \(\frac{x}{2^k}\), we'll then study the real positive roots on the interval \([0,1]\).
-The corresponding polynomial will be \(f(\frac{x}{2^k}) \in \mathbb{Q}[x]\). We will then need to factorize \(f\) to have \(\tilde{f} \in \mathbb{Z}[x]\), in order to have integers coefficients.
+We described a method allowing us to study the positive real roots of a
+polynomial on different intervals. Here are the steps :
+\begin{itemize}
+  \item Bound the maximum real positive root with \( Bound(\underline{f}) = B = 2^k\)
+  \item Substitute \(x\), allowing us to change the interval of study\\ex : $\quad$ \(x \rightarrow \frac{x}{2^k} \quad \Rightarrow \quad ]0,B[ \rightarrow ]0,1[\)
+  \item Factorize \(f\) in order to have integer coefficients again \\\(f \in \mathbb{Q}[x] \rightarrow \tilde{f} \in \mathbb{Z}[x]\)
+  \item Use Descartes’ rule of sign to determine the number of real positive roots in the new interval
+\end{itemize}
+
 
 \subsection*{Recursive method}
 Using the method described above to study the roots on different intervals, we want to do it on specific intervals repeatedly until we've successfully isolated each root :
 \begin{itemize}
   \item \(]0,1[\) by doing the substitution \(x \rightarrow \frac{x}{2^k}\)
-  \item \(]0,+\infty[\) by doing the substitution \(x \rightarrow \frac{1}{y+1}\)
-  \item \(]0,\frac{1}{2}[\) by doing the substitution \(x \rightarrow 2x\)
-  \item \(]\frac{1}{2},1[\) by doing the substitution \(x \rightarrow 2x\)
+  \item \(]0,+\infty[\) by doing the substitution \(x \rightarrow \frac{1}{y+1} \quad (y=\frac{1}{x}-1\))
+  \item \(]0,\frac{1}{2}[\) by doing the substitution \(x \rightarrow 2y \quad (y=\frac{x}{2}\))
+  \item \(]\frac{1}{2},1[\) by doing the substitution \(x \rightarrow 2y-1 \quad (y=\frac{x}{2}+\frac{1}{2}\))
 \end{itemize}
 
 \subsection*{Role of the Taylor Shifts}
