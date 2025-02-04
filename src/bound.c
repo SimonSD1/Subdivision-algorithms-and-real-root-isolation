@@ -77,7 +77,7 @@ void local_max_bound_implementation(fmpz_t ub, fmpz_poly_t poly) {
             fmpz_add_si(tempub,tempub,1);
             
 
-            // Update ub if K is larger
+            // Update ub if tempub is larger
             if (fmpz_cmp(tempub, ub) > 0) {
                 fmpz_set(ub, tempub);
                 t++;
