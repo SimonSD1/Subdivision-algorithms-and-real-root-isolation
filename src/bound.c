@@ -6,7 +6,30 @@
 #include <math.h>
 
 
-// bound the abs of the complex roots
+void Lagrange_bound(fmpz_t bound, fmpz_poly_t poly ){
+    
+    fmpz_init(bound);
+
+    fmpz_t coef;
+    fmpz_init(coef);
+
+    for (slong i = 0; i < poly->length-1 ; i++)
+    {
+        fmpz_poly_get_coeff_fmpz(coef,poly,i);
+        fmpz_abs(coef,coef);
+        fmpz_add(bound,bound,coef);
+    }
+
+    fmpz_poly_get_coeff_fmpz(coef,poly,poly->length-1);
+    fmpz_abs(coef,coef);
+    fmpz_cdiv_q(bound,bound,coef);
+
+    if(fmpz_cmp_si(bound,1)<0){
+        fmpz_set_ui(bound,1);
+    }
+}
+
+// result in fmpq
 void Cauchy_bound(fmpq_t bound, const fmpz_poly_t poly)
 {
     fmpz_t max_coeff;
@@ -139,12 +162,12 @@ int main()
     printf("\n");
 
     // fmpq_t bound;
-    fmpq_t bound_complex;
-    fmpq_init(bound_complex);
-    Cauchy_bound(bound_complex, P);
+    fmpz_t bound;
+    fmpz_init(bound);
+    Lagrange_bound(bound, P);
 
-    printf("bound= : ");
-    fmpq_print(bound_complex);
+    printf("bound lagrange = : ");
+    fmpz_print(bound);
     printf("\n");
 
     fmpz_t bound_pos;
