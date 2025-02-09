@@ -27,6 +27,6 @@ make
 ```
 
 - main() functions are only in files located in folders EfficiencyTests and ValidityTests.  
-- Results folder contains the result datas and graphs (in png).   
+- Results folder contains the result datas of tests.   
 - Graphs are created with a python script located in folder EfficiencyTests, and should be generated directly in .c main() functions (not from terminal).
 - DATA contains randomely generated polynomials that can be reused for future tests
