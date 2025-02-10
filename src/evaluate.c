@@ -24,20 +24,30 @@ void evaluate_1(fmpz_t result, fmpz_poly_t poly)
     fmpz_clear(temp);
 }
 
-void evaluate_half(fmpz_t result, fmpz_poly_t poly)
+// we just want to know if it is zero so we could keep the numerator
+void evaluate_half(fmpq_t result, fmpz_poly_t poly)
 {
-    fmpz_init(result);
+    fmpz_t denominator;
+    fmpz_t numerator;
     fmpz_t temp;
+
+    slong deg = fmpz_poly_degree(poly);
+
+    fmpz_init(denominator);
+    fmpz_init(numerator);
     fmpz_init(temp);
 
-    for (slong i = 0; i < poly->length; i++)
-    {
-        fmpz_poly_get_coeff_fmpz(temp, poly, i);
-        fmpz_fdiv_q_2exp(temp,temp, i);
-        fmpz_add(result, result, temp);
+    for(slong i =0; i<poly->length; i++){
+        fmpz_poly_get_coeff_fmpz(temp,poly,i);
+        fmpz_mul_2exp(temp,temp,deg-i);
+        fmpz_add(numerator,temp,numerator);
     }
 
-    fmpz_clear(temp);
+    fmpz_set_si(denominator,1);
+    fmpz_mul_2exp(denominator,denominator,deg);
+
+    fmpq_init(result);
+    fmpq_set_fmpz_frac(result,numerator,denominator);
 }
 
 int main(int argc, char const *argv[])
@@ -86,9 +96,9 @@ int main(int argc, char const *argv[])
     fmpz_print(result);
     printf("\n");
 
-    evaluate_half(result, P);
+    evaluate_half(resultq, P);
     printf("P(1/2)= ");
-    fmpz_print(result);
+    fmpq_print(resultq);
     printf("\n");
     fmpz_poly_evaluate_fmpq(resultq,P,half);
     fmpq_print(resultq);
