@@ -29,30 +29,41 @@ void Lagrange_bound(fmpz_t bound, fmpz_poly_t poly ){
         fmpz_set_ui(bound,1);
     }
 }
-
-// result in fmpq
-void Cauchy_bound(fmpq_t bound, const fmpz_poly_t poly)
+// result in fmpz
+void Cauchy_bound(fmpz_t bound, const fmpz_poly_t poly)
 {
-    fmpz_t max_coeff;
-    fmpz_init(max_coeff);
-
-    // find max of |a_i|
-    for (slong i = 0; i < poly->length ; i++)
+    if (poly->length <= 0)
     {
-        // cmpabs = compare abs
+        fmpz_zero(bound);
+        return;
+    }
+
+    fmpz_t max_coeff, lead_abs, numerator, q;
+    fmpz_init(max_coeff);
+    fmpz_init(lead_abs);
+    fmpz_init(numerator);
+    fmpz_init(q);
+
+    fmpz_zero(max_coeff);
+
+    for (slong i = 0; i < poly->length - 1; i++)
+    {
         if (fmpz_cmpabs(poly->coeffs + i, max_coeff) > 0)
         {
             fmpz_set(max_coeff, poly->coeffs + i);
         }
     }
 
-    //  1 + max(|a_i|) / |a_n|
-    fmpq_set_fmpz(bound, max_coeff);
-    fmpq_div_fmpz(bound, bound, poly->coeffs + poly->length - 1);
-    fmpq_add_si(bound, bound, 1);
-    fmpq_abs(bound, bound);
+    fmpz_cdiv_q(max_coeff,max_coeff,poly->coeffs+poly->length-1);
+
+    fmpz_abs(max_coeff,max_coeff);
+
+    fmpz_add_ui(bound, max_coeff, 1);
 
     fmpz_clear(max_coeff);
+    fmpz_clear(lead_abs);
+    fmpz_clear(numerator);
+    fmpz_clear(q);
 }
 
 // presented in https://arxiv.org/pdf/2008.11039 and https://faculty.e-ce.uth.gr/akritas/phd_thesis_vigklas.pdf
@@ -77,7 +88,7 @@ void local_max_bound_implementation(fmpz_t ub, fmpz_poly_t poly) {
         fmpz_poly_neg(poly, poly);
     }
 
-    fmpz_t tempub, old_tempub, r, r_pow_k, K;
+    fmpz_t tempub;
     fmpz_init(tempub);
 
     fmpz_zero(ub);

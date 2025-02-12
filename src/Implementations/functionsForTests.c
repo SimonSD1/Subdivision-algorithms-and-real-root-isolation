@@ -20,6 +20,23 @@ void fprintTab(double* tab, int size, FILE* file) {
 }
 
 
+void fprintFmpzTab(fmpz* tab, int size, FILE* file) {
+    fprintf(file, "[");
+    for(int i = 0; i < size; i++) {
+        char *str = fmpz_get_str(NULL, 10, &tab[i]);  
+        
+        if(i == (size - 1)) {
+            fprintf(file, "%s", str);
+        } else {
+            fprintf(file, "%s, ", str);
+        }
+        
+        free(str);
+    }
+    fprintf(file, "]\n");
+}
+
+
 
 void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i) {
     FILE* filePoly;

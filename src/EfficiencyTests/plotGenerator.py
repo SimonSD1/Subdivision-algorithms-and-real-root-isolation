@@ -52,7 +52,7 @@ def plotGenerator(file_path, timeOrMem, fixedVariable):
     plt.title(title)
     plt.legend()
     plt.grid(True)
-    plt.show()
+    plt.savefig("plot_shift")
 
 
 # Main script logic

@@ -46,45 +46,44 @@ void divide_conquer(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed
     fmpz_poly_clear(f1);
 }
 
-void poly_shift(fmpz_poly_t g, fmpz_poly_t poly, slong a)
+
+// the one from flint uses horner for polynomial with degree less than 50
+// and parallelism
+void poly_shift(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a)
 {
 
     /// precomputation
 
     slong len = fmpz_poly_length(poly);
-    printf("\n len=%ld\n", len);
 
-    // Check if len is a power of two
-    if ((len & (len - 1)) != 0)
-    {
-        flint_printf("Error: Polynomial length must be a power of two.\n");
-        flint_abort();
-    }
+    printf("\n len = %ld \n",len);
 
-    slong m = 0;
-    slong temp_len = len;
-    // shift until temp_len = 0 to compute 2^m=len
-    while (temp_len >>= 1)
-        m++;
+    fmpz_print(a);
+    printf("\n");
 
-    printf("\n m=%ld\n", m);
+    slong m;
+    fmpz_t len_fmpz;
+    fmpz_init_set_si(len_fmpz,len);
+
+    m=fmpz_clog_ui(len_fmpz,2);
+
 
     fmpz_poly_t *precomputed = flint_malloc(m * sizeof(fmpz_poly_t));
+    if(!precomputed){
+        printf("error allocating\n");
+    }
     for (slong i = 0; i < m; i++)
     {
         fmpz_poly_init(precomputed[i]);
     }
 
     fmpz_poly_set_coeff_si(precomputed[0], 1, 1);
-    fmpz_poly_set_coeff_si(precomputed[0], 0, a);
+    fmpz_poly_set_coeff_fmpz(precomputed[0], 0, a);
 
     // square (x+a) m times by using the previous one
     for (slong i = 1; i < m; i++)
     {
         fmpz_poly_sqr(precomputed[i], precomputed[i - 1]);
-        printf("\n");
-        fmpz_poly_print_pretty(precomputed[i], &x);
-        printf("\n");
     }
 
     // g = result of poly(x+a)
@@ -94,3 +93,35 @@ void poly_shift(fmpz_poly_t g, fmpz_poly_t poly, slong a)
         fmpz_poly_clear(precomputed[i]);
     flint_free(precomputed);
 }
+
+void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a){
+    fmpz_poly_init(result);
+    slong length=poly->length;
+
+    fmpz_poly_t power;
+    fmpz_poly_init(power);
+    fmpz_poly_set_coeff_si(power, 0,1);
+
+    fmpz_poly_t x_plus_a;
+    fmpz_poly_init(x_plus_a);
+    fmpz_poly_set_coeff_si(x_plus_a, 1, 1);
+    fmpz_poly_set_coeff_fmpz(x_plus_a, 0, a);
+    
+    fmpz_t coeff;
+    fmpz_init(coeff);
+
+    fmpz_poly_t temp;
+    fmpz_poly_init(temp);
+    
+    for(slong i=0; i<length; i++){
+        fmpz_poly_get_coeff_fmpz(coeff,poly,i);
+
+        // poly_i * (x+a)^i
+        fmpz_poly_scalar_mul_fmpz(temp,power,coeff);
+
+        fmpz_poly_add(result,result,temp);
+
+        fmpz_poly_mul(power,power,x_plus_a);
+    }
+}
+
