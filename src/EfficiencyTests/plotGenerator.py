@@ -55,7 +55,6 @@ def plotGenerator(file_path, timeOrMem, fixedVariable):
     
     save_file_path = file_path.rsplit('.', 1)[0] + '.png'
     plt.savefig(save_file_path)
-    plt.show()
 
 
 

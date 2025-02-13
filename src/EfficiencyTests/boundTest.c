@@ -93,7 +93,7 @@ void comparBounds(FILE *fileResultsSpeed,FILE *fileResultsValues)
 int main(int argc, char *argv[])
 {
     // to run or re-run the tests, pass argument : ./flintMultTest -runTests
-    // if not it will only display the graphs
+    // if not it will only make the graphs as png files in the results folder
     if (argc > 1 && strcmp(argv[1], "-runTests") == 0)
     {
         printf("running");
@@ -110,10 +110,9 @@ int main(int argc, char *argv[])
         }
 
         comparBounds(fileResultsSpeed,fileResultsValues);
-        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundSpeedChangingDegree.txt 'time' 0");
-        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundValuesChangingDegree.txt 'time' 0");
-
     }
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundSpeedChangingDegree.txt 'time' 0");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundValuesChangingDegree.txt 'time' 0");
 
     return 0;
 }

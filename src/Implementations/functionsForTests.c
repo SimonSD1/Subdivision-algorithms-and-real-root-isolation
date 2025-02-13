@@ -62,31 +62,3 @@ void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i) {
 
     fclose(filePoly);
 }
-
-
-
-void timeEfficiencyMultiplication(void (*func)(fmpz_poly_t,const fmpz_poly_t,const fmpz_poly_t), int fixedVariable, FILE* fileResults) {
-    fmpz_poly_t poly1, poly2, result;
-    fmpz_poly_init(poly1);
-    fmpz_poly_init(poly2);
-    fmpz_poly_init(result);        
-
-    clock_t start, end;
-    double* tabTps = malloc(sizeof(double)*(101));  // car il y a 101 polynômes dans DATA
-
-    for(slong i=0; i <= 100; i++) {
-        readPolyDATA(poly1, fixedVariable, i);
-        readPolyDATA(poly2, fixedVariable, i);  // je ne sais pas si c'est une bonne idée de tester la multiplaction sur 2 mêmes polynômes (carré du polynôme)
-
-        start = clock();
-        func(result, poly1, poly2);
-        end = clock();
-        tabTps[i] = (double)(end - start);
-    }
-
-    fprintTab(tabTps, 101, fileResults);
-
-    fmpz_poly_clear(poly1);
-    fmpz_poly_clear(poly2);
-    fmpz_poly_clear(result);
-}

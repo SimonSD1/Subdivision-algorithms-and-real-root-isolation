@@ -75,7 +75,7 @@ void comparShift(FILE *fileResults)
 int main(int argc, char *argv[])
 {
     // to run or re-run the tests, pass argument : -runTests
-    // if not it will only display the graphs
+    // if not it will only make the graphs as png files in the results folder
     printf("debut");
     if (argc > 1 && strcmp(argv[1], "-runTests") == 0)
     {
