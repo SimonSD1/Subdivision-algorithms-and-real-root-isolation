@@ -10,7 +10,7 @@
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/bound.h"
 
-void comparBounds(FILE *fileResults)
+void comparBounds(FILE *fileResultsSpeed,FILE *fileResultsValues)
 {
     fmpz_poly_t poly;
     fmpz_poly_init(poly);
@@ -62,37 +62,30 @@ void comparBounds(FILE *fileResults)
         fmpz_set(&tabBoundDegreeFlint[i], bound);
     }
 
-    fprintf(fileResults, "Bound_efficiency_test\n"); // Title of the plot
-    fprintf(fileResults, "Chauchy\n");  
-    fprintFmpzTab(tabBoundDegreeCauchy, 101, fileResults);
-    fprintf(fileResults, "Lagrange\n");
-    fprintFmpzTab(tabBoundDegreeLagrange, 101, fileResults);
-    fprintf(fileResults, "Modified Cauchy\n");
-    fprintFmpzTab(tabBoundDegreeModifiedCauchy, 101, fileResults);
-    fprintf(fileResults, "Flint\n");
-    fprintFmpzTab(tabBoundDegreeFlint, 101, fileResults);
+    fprintf(fileResultsValues, "Bound values test\n"); // Title of the plot
+    fprintf(fileResultsValues, "Chauchy\n");  
+    fprintFmpzTab(tabBoundDegreeCauchy, 101, fileResultsValues);
+    fprintf(fileResultsValues, "Lagrange\n");
+    fprintFmpzTab(tabBoundDegreeLagrange, 101, fileResultsValues);
+    fprintf(fileResultsValues, "Modified Cauchy\n");
+    fprintFmpzTab(tabBoundDegreeModifiedCauchy, 101, fileResultsValues);
+    fprintf(fileResultsValues, "Flint\n");
+    fprintFmpzTab(tabBoundDegreeFlint, 101, fileResultsValues);
 
-    //fprintf(fileResults, "Bound_efficiency_test\n"); // Title of the plot
-    //fprintf(fileResults, "Chauchy\n");                                          // labels of the plot
-    //fprintTab(tabTimesDegreeCauchy, 101, fileResults);
-    //fprintf(fileResults, "Lagrange\n");
-    //fprintTab(tabTimesDegreeLagrange, 101, fileResults);
-    //fprintf(fileResults, "Modified Cauchy\n");
-    //fprintTab(tabTimesDegreeModifiedCauchy, 101, fileResults);
-    //fprintf(fileResults, "Flint\n");
-    //fprintTab(tabTimesDegreeFlint, 101, fileResults);
+    fprintf(fileResultsSpeed, "Bound compputing speed test\n"); // Title of the plot
+    fprintf(fileResultsSpeed, "Chauchy\n");                                          // labels of the plot
+    fprintTab(tabTimesDegreeCauchy, 101, fileResultsSpeed);
+    fprintf(fileResultsSpeed, "Lagrange\n");
+    fprintTab(tabTimesDegreeLagrange, 101, fileResultsSpeed);
+    fprintf(fileResultsSpeed, "Modified Cauchy\n");
+    fprintTab(tabTimesDegreeModifiedCauchy, 101, fileResultsSpeed);
+    fprintf(fileResultsSpeed, "Flint\n");
+    fprintTab(tabTimesDegreeFlint, 101, fileResultsSpeed);
 
 
-    fclose(fileResults);
+    fclose(fileResultsSpeed);
+    fclose(fileResultsValues);
 
-    ///fprintf(fileResults, "Taylor shift efficiency test\n"); // Title of the plot
-    ///fprintf(fileResults, "Implem divide consuer\n");                                          // labels of the plot
-    ///fprintTab(tabTimesDegreedivide_conquer_implem, 101, fileResults);
-    ///fprintf(fileResults, "Flint div conquer\n");
-    ///fprintTab(tabTimesDegreedivide_conquer_flint, 101, fileResults);
-    ///fprintf(fileResults, "Naive\n");
-    ///fprintTab(tabTimesDegreeNaive, 101, fileResults);
-    ///fclose(fileResults);
 
     fmpz_poly_clear(poly);
 }
@@ -104,17 +97,21 @@ int main(int argc, char *argv[])
     if (argc > 1 && strcmp(argv[1], "-runTests") == 0)
     {
         printf("running");
-        FILE *fileResults;
-        fileResults = fopen("EfficiencyTests/Results/boundChangingDegree.txt", "w");
-        if (fileResults == NULL)
+        FILE *fileResultsSpeed;
+        FILE *fileResultsValues;
+        fileResultsSpeed = fopen("EfficiencyTests/Results/boundSpeedChangingDegree.txt", "w");
+        fileResultsValues = fopen("EfficiencyTests/Results/boundValuesChangingDegree.txt", "w");
+
+        if (fileResultsSpeed == NULL || fileResultsValues == NULL)
         {
             printf("The file is not opened. The program will "
                    "now exit.\n");
             exit(0);
         }
 
-        comparBounds(fileResults);
-        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundChangingDegree.txt 'time' 0");
+        comparBounds(fileResultsSpeed,fileResultsValues);
+        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundSpeedChangingDegree.txt 'time' 0");
+        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundValuesChangingDegree.txt 'time' 0");
 
     }
 

@@ -55,10 +55,6 @@ void comparShift(FILE *fileResults)
         start = clock();
     }
 
-    
-    
-    
-
     fprintf(fileResults, "Taylor shift efficiency test\n"); // Title of the plot
     fprintf(fileResults, "Implem divide consuer\n");                                          // labels of the plot
     fprintTab(tabTimesDegreedivide_conquer_implem, 101, fileResults);
@@ -85,7 +81,7 @@ int main(int argc, char *argv[])
     {
         printf("running");
         FILE *fileResults;
-        fileResults = fopen("EfficiencyTests/Results/boundChangingDegree.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/shiftChangingDegree.txt", "w");
         if (fileResults == NULL)
         {
             printf("The file is not opened. The program will "
@@ -94,7 +90,7 @@ int main(int argc, char *argv[])
         }
 
         comparShift(fileResults);
-        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundChangingDegree.txt 'time' 0");
+        system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/shiftChangingDegree.txt 'time' 0");
 
     }
 

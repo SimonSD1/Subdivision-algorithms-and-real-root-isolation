@@ -52,7 +52,9 @@ def plotGenerator(file_path, timeOrMem, fixedVariable):
     plt.title(title)
     plt.legend()
     plt.grid(True)
-    plt.savefig("plot_shift")
+    
+    save_file_path = file_path.rsplit('.', 1)[0] + '.png'
+    plt.savefig(save_file_path)
 
 
 # Main script logic
