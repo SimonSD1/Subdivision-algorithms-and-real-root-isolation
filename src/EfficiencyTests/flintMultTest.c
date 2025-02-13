@@ -56,8 +56,8 @@ int main(int argc, char* argv[]) {
     }
 
 
-    system("python.exe EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingDegree.txt 'time' 0");
-    system("python.exe EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingCoeffSize.txt 'time' 1");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingDegree.txt 'time' 0");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingCoeffSize.txt 'time' 1");
 
     return 0;
 }
