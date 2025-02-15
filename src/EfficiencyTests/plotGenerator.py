@@ -33,8 +33,11 @@ def plotGenerator(file_path, timeOrMem, fixedVariable):
         i += 2
 
     plt.figure()
+
+    x_values = [1 + 200 * i for i in range(101)] ## coef i = 200*i+1
+    
     for algo, res in zip(algorithms, results):
-        plt.plot(res, label=algo, marker='.')
+        plt.plot(x_values,res, label=algo, marker='.')
 
     # second argument when calling the function should be "time" or "memory"
     if (timeOrMem == "time") :

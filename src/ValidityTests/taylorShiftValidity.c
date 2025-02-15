@@ -57,7 +57,7 @@ int main()
     fmpz_poly_t result_flint;
     fmpz_poly_init(result_flint);
 
-    poly_shift(result, P, a_fmpz);
+    poly_shift_plus_one(result, P, a_fmpz);
 
     printf("\nResult implem :\n");
     fmpz_poly_print(result);

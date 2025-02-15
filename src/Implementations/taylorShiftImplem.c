@@ -10,11 +10,10 @@
 char x = 'x';
 
 
-
 // because we split in half, we know that f1 is factorizable by (x+a)^len/2
 // so shifted_f = f1(x+a) * (x+a)^len/2 + f0(x+a)
 // we can split the polynomials until we find f1 and f0 constant, so f1(x+a)=f1
-void divide_conquer(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed, slong k)
+void divide_conquer_plus_one(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed, slong k)
 {
     if (k == 0)
     {
@@ -36,8 +35,8 @@ void divide_conquer(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed
     fmpz_poly_shift_right(f1, f, half);
     fmpz_poly_set_trunc(f1, f1, half);
 
-    divide_conquer(f0, f0, precomputed, k - 1);
-    divide_conquer(f1, f1, precomputed, k - 1);
+    divide_conquer_plus_one(f0, f0, precomputed, k - 1);
+    divide_conquer_plus_one(f1, f1, precomputed, k - 1);
 
     fmpz_poly_mul(f1, precomputed[k - 1], f1);
     fmpz_poly_add(g, f0, f1);
@@ -49,9 +48,9 @@ void divide_conquer(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed
 
 // the one from flint uses horner for polynomial with degree less than 50
 // and parallelism
-void poly_shift(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a)
+void poly_shift_plus_one(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a)
 {
-
+    printf("bonjour\n");
     /// precomputation
 
     slong len = fmpz_poly_length(poly);
@@ -83,11 +82,12 @@ void poly_shift(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a)
     // square (x+a) m times by using the previous one
     for (slong i = 1; i < m; i++)
     {
+        // square the previous one in the i-th
         fmpz_poly_sqr(precomputed[i], precomputed[i - 1]);
     }
 
     // g = result of poly(x+a)
-    divide_conquer(g, poly, precomputed, m);
+    divide_conquer_plus_one(g, poly, precomputed, m);
 
     for (slong i = 0; i < m; i++)
         fmpz_poly_clear(precomputed[i]);
