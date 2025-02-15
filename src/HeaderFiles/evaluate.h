@@ -10,6 +10,6 @@
 
 void evaluate_0(fmpz_t result, fmpz_poly_t poly);
 void evaluate_1(fmpz_t result, fmpz_poly_t poly);
-void evaluate_half(fmpz_t result, fmpz_poly_t poly);
+void evaluate_half(fmpq_t result, fmpz_poly_t poly);
 
 #endif

@@ -161,7 +161,7 @@ void comparShiftCoeffsSize(FILE *fileResults)
     fmpz_poly_clear(result_flint);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
     // to run or re-run the tests, pass argument : -runTests
     // if not it will only make the graphs as png files in the results folder
