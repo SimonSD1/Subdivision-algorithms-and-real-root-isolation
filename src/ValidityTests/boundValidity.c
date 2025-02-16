@@ -6,25 +6,7 @@
 #include <math.h>
 #include "../HeaderFiles/bound.h"
 #include "../HeaderFiles/functionsForTests.h"
-
-#include <string.h>
-
-slong descartes_rule(fmpz_poly_t poly)
-{
-    slong length = poly->length;
-
-    slong sign_changes = 0;
-
-    for (slong i = 1; i < length; i++)
-    {
-        if ((poly->coeffs[i] < 0 && poly->coeffs[i - 1] > 0) || (poly->coeffs[i] > 0 && poly->coeffs[i - 1] < 0))
-        {
-            sign_changes++;
-        }
-    }
-
-    return sign_changes;
-}
+#include "../HeaderFiles/descartes.h"
 
 void verifyBounds()
 {
@@ -38,16 +20,16 @@ void verifyBounds()
     {
         readPolyDATA(poly, fixedVariable, i);
 
-        //local_max_bound_implementation(bound, poly);
-        fmpz_poly_bound_roots(bound,poly);
+        // local_max_bound_implementation(bound, poly);
+        fmpz_poly_bound_roots(bound, poly);
 
-        fmpz_add_si(bound,bound,1);
+        fmpz_add_si(bound, bound, 1);
 
         // shift of bound should result in no positive real roots
         fmpz_poly_taylor_shift_divconquer(poly, poly, bound);
 
         slong max_roots = descartes_rule(poly);
-        
+
         // the number of roots is less than
         if (max_roots > 0)
         {
