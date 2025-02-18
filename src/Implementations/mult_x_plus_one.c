@@ -29,9 +29,6 @@ void mult_x_plus_1_power(fmpz_poly_t result, fmpz_poly_t poly, slong power){
 
         fmpz_bin_uiui(coef_binom,power,i);
 
-        printf("coeff : \n");
-        fmpz_print(coef_binom);
-
         fmpz_poly_scalar_mul_fmpz(temp,temp,coef_binom);
 
         fmpz_poly_add(result,result,temp);

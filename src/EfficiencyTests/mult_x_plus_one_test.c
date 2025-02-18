@@ -36,32 +36,47 @@ void compar_x_plus_1(FILE *fileResults, int fixedVariable)
     fmpz_poly_print(x_plus_one);
     printf("\n");
 
-    for (slong i = 0; i <= 0; i++)
+    slong power=15;
+
+    fmpz_poly_pow_multinomial(x_plus_one,x_plus_one,power);
+
+    clock_t start, end;
+    double *tabImplem = calloc(101, sizeof(double)); // car il y a 101 polynômes dans DATA
+    double *tabFlint = calloc(101, sizeof(double));
+
+    for (slong i = 0; i <= 100; i++)
     {
         readPolyDATA(poly, fixedVariable, i);
 
-        mult_x_plus_1_power(result, poly, 2);
-
+        start = clock();
+        mult_x_plus_1_power(result, poly, power);
+        end = clock();
+        tabImplem[i] = (double)(end - start);
+        
+        start = clock();
         fmpz_poly_mul(result_flint, poly, x_plus_one);
-        fmpz_poly_mul(result_flint, result_flint, x_plus_one);
+        end = clock();
+        tabFlint[i] = (double)(end - start);
+        
 
-        printf("\n");
-        fmpz_poly_print(result);
-        printf("\n");
 
-        printf("\n");
-        fmpz_poly_print(result_flint);
-        printf("\n");
-
-        if (fmpz_poly_equal(result, result_flint))
-        {
-            printf("correct\n");
-        }
-        else
+        if (!fmpz_poly_equal(result, result_flint))
         {
             printf("incorrect\n");
+            break;
         }
     }
+
+    fprintf(fileResults, "Mult test\n"); // Title of the plot
+    fprintf(fileResults, "Implem\n");                         // labels of the plot
+    fprintTab(tabImplem, 101, fileResults);
+    fprintf(fileResults, "Flint\n");
+    fprintTab(tabFlint, 101, fileResults);
+
+    free(tabImplem);
+    free(tabFlint);
+
+    fmpz_poly_clear(poly);
 }
 
 int main()

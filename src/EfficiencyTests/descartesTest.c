@@ -9,7 +9,6 @@
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/descartes.h"
 
-
 char x = 'x';
 
 void testDescartes()
