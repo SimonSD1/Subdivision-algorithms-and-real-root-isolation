@@ -44,13 +44,44 @@ void verifyBounds()
     fmpz_poly_clear(poly);
 }
 
+
+void testBounds(fmpz_t bound, fmpz_poly_t poly) {
+    printf("Flint Implementation //////////////\n");
+    printf("Testing polynomial:\n");
+    fmpz_poly_print_pretty(poly, "x");
+
+    Lagrange_bound(bound, poly);
+    printf("\nLagrange Bound: ");
+    fmpz_print(bound);
+
+    Cauchy_bound(bound, poly);
+    printf("\nCauchy Bound: ");
+    fmpz_print(bound);
+
+    local_max_bound_implementation(bound, poly);
+    printf("\nLocal Max Bound: ");
+    fmpz_print(bound);
+}
+
 int main()
 {
-    // to run or re-run the tests, pass argument : ./flintMultTest -runTests
-    // if not it will only display the graphs
+    //printf("running");
+    //verifyBounds();
 
-    printf("running");
-    verifyBounds();
+    fmpz_poly_t poly;
+    fmpz_poly_init(poly);
+    fmpz_t bound;
+    fmpz_init(bound);
+
+    // Define polynomial P(x) = x^4 - 16
+    fmpz_poly_set_str(poly, "5  -16 0 0 0 1");
+
+    testBounds(bound, poly);
+    printf("\n\nSageMath Implementation //////////////\n");
+    system("sage ValidityTests/bound.sage 'x^4 - 16'");
+
+    fmpz_poly_clear(poly);
+    fmpz_clear(bound);
 
     return 0;
 }

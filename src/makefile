@@ -1,7 +1,7 @@
 # Compilateur et options
 CC = gcc
-CFLAGS = -Wall -Wextra -IHeaderFiles
-LIBS = -lflint -lgmp
+CFLAGS = -Wall -Wextra -IHeaderFiles $(shell pkg-config --cflags flint)
+LIBS = $(shell pkg-config --libs flint)
 
 # Répertoires
 IMPL_DIR = Implementations

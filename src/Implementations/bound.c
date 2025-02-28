@@ -28,6 +28,7 @@ void Lagrange_bound(fmpz_t bound, fmpz_poly_t poly ){
     if(fmpz_cmp_si(bound,1)<0){
         fmpz_set_ui(bound,1);
     }
+    fmpz_clear(coef);
 }
 // result in fmpz
 void Cauchy_bound(fmpz_t bound, const fmpz_poly_t poly)
