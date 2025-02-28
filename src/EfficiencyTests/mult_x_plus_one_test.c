@@ -36,7 +36,7 @@ void compar_x_plus_1(FILE *fileResults, int fixedVariable)
     fmpz_poly_print(x_plus_one);
     printf("\n");
 
-    slong power=15;
+    slong power=100;
 
     fmpz_poly_pow_multinomial(x_plus_one,x_plus_one,power);
 
@@ -78,6 +78,7 @@ void compar_x_plus_1(FILE *fileResults, int fixedVariable)
 
     fmpz_poly_clear(poly);
 }
+
 
 int main()
 {
