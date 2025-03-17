@@ -49,7 +49,7 @@ void comparEvaluate(FILE *fileResultsHalf,FILE * fileResults1, FILE * fileResult
 
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i);
+        readPolyDATA(poly, fixedVariable, i, 0);
 
 
         // half

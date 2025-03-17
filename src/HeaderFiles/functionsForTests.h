@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <time.h>
-#include "../HeaderFiles/polyRandomGeneration_functions.h"
 
 
 #ifndef TEST_FUNCTIONS_H
@@ -13,6 +12,5 @@
 
 void fprintTab(double* tab, int size, FILE* file);
 void fprintFmpzTab(fmpz* tab, int size, FILE* file);
-void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i);
-
+void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i, int LinearOrExponent);
 #endif

@@ -36,7 +36,7 @@ void comparShift(FILE *fileResults, int fixedVariable)
     printf("debut");
     for (slong i = 0; i <= 20; i++)
     {
-        readPolyDATA(poly, fixedVariable, i);
+        readPolyDATA(poly, fixedVariable, i, 0);
 
         printf("debut");
         start = clock();

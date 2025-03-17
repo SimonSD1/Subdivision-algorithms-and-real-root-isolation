@@ -6,7 +6,6 @@
 #include <malloc.h>
 #include <time.h>
 #include "../HeaderFiles/functionsForTests.h"
-#include "../HeaderFiles/polyRandomGeneration_functions.h"
 
 
 void fprintTab(double* tab, int size, FILE* file) {
@@ -38,24 +37,45 @@ void fprintFmpzTab(fmpz* tab, int size, FILE* file) {
 
 
 
-void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i) {
+void readPolyDATA(fmpz_poly_t poly, int fixedVariable, int i, int LinearOrExponent) {
     FILE* filePoly;
-    char pathFile[50];
-    // fixedVariable decides which variable is fixed and which one is varying for tests
-    if(!fixedVariable) {
-        sprintf(pathFile, "../DATA/FixedCoeffSize_ChangingDegree/poly%d.txt", i);
-        filePoly = fopen(pathFile, "r");
+    char pathFile[80];
+
+    //LinearOrExponent decides whether we generate polynomials with sizes growing linearly or expenentially
+    if(!LinearOrExponent) {
+        // fixedVariable decides which variable is fixed and which one is varying for tests
+        if(!fixedVariable) {
+            sprintf(pathFile, "../DATA/LinearSizes_ChangingDegree/poly%d.txt", i);
+            filePoly = fopen(pathFile, "r");
+        }
+        else {
+            sprintf(pathFile, "../DATA/LinearSizes_ChangingCoeffSize/poly%d.txt", i);
+            filePoly = fopen(pathFile, "r");
+        }
+
+        if (filePoly == NULL) {
+            printf("The file is not opened. The program will "
+                "now exit.\n");
+            exit(0);
+        }
     }
     else {
-        sprintf(pathFile, "../DATA/FixedDegree_ChangingCoeffSize/poly%d.txt", i);
-        filePoly = fopen(pathFile, "r");
-    }
+        if(!fixedVariable) {
+            sprintf(pathFile, "../DATA/ExponentialSizes_ChangingDegree/poly%d.txt", i);
+            filePoly = fopen(pathFile, "r");
+        }
+        else {
+            sprintf(pathFile, "../DATA/ExponentialSizes_ChangingCoeffSize/poly%d.txt", i);
+            filePoly = fopen(pathFile, "r");
+        }
 
-    if (filePoly == NULL) {
-        printf("The file is not opened. The program will "
-               "now exit.\n");
-        exit(0);
+        if (filePoly == NULL) {
+            printf("The file is not opened. The program will "
+                "now exit. i=%d\n",i);
+            exit(0);
+        }
     }
+    
 
     if(!fmpz_poly_fread(filePoly, poly))
         printf("Could not read the FILE");

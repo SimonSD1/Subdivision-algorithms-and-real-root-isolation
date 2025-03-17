@@ -18,7 +18,7 @@ void verifyBounds()
     int fixedVariable = 0;
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i);
+        readPolyDATA(poly, fixedVariable, i, 0);
 
         // local_max_bound_implementation(bound, poly);
         fmpz_poly_bound_roots(bound, poly);

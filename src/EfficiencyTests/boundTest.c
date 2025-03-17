@@ -33,7 +33,7 @@ void comparBounds(FILE *fileResultsSpeed,FILE *fileResultsValues)
     int fixedVariable = 0;
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i);
+        readPolyDATA(poly, fixedVariable, i, 0);
 
 
         start = clock();
