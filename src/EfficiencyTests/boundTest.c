@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <time.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/bound.h"
 
@@ -92,15 +93,17 @@ void comparBounds(FILE *fileResultsSpeed,FILE *fileResultsValues)
 
 int main(int argc, char *argv[])
 {
-    // to run or re-run the tests, pass argument : ./flintMultTest -runTests
+    // to run or re-run the tests, pass argument : ./flintMultTest -r
     // if not it will only make the graphs as png files in the results folder
-    if (argc > 1 && strcmp(argv[1], "-runTests") == 0)
+    if (argc > 1 && strcmp(argv[1], "-r") == 0)
     {
+        
+        mkdir("EfficiencyTests/Results/boundTest", 0777);
         printf("running");
         FILE *fileResultsSpeed;
         FILE *fileResultsValues;
-        fileResultsSpeed = fopen("EfficiencyTests/Results/boundSpeedChangingDegree.txt", "w");
-        fileResultsValues = fopen("EfficiencyTests/Results/boundValuesChangingDegree.txt", "w");
+        fileResultsSpeed = fopen("EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt", "w");
+        fileResultsValues = fopen("EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt", "w");
 
         if (fileResultsSpeed == NULL || fileResultsValues == NULL)
         {
@@ -111,8 +114,8 @@ int main(int argc, char *argv[])
 
         comparBounds(fileResultsSpeed,fileResultsValues);
     }
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundSpeedChangingDegree.txt 'time' 0");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundValuesChangingDegree.txt 'time' 0");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt 'time' 0 'lin'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt 'time' 0 'lin'");
 
     return 0;
 }

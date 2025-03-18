@@ -7,9 +7,10 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/taylorShift_implem.h"
-#include <sys/time.h>
 
 
 ////////// clock() will sum the execution time of all threads ! instead, use gettimeofday()
@@ -78,7 +79,7 @@ void benchmark_DivConq_Implem(fmpz_t shift, slong maxPow, int fixedVariable, FIL
         readPolyDATA(poly, fixedVariable, i+1, 1);
 
         clock_t begin = clock();
-        poly_shift_plus_one(result, poly, shift, 65);
+        poly_shift_plus_one(result, poly, shift, 129);
         clock_t end = clock();
         tabTps[i] = (double)(end - begin);// / CLOCKS_PER_SEC;
 
@@ -106,7 +107,7 @@ void benchmark_DivConq_Implem_Table(slong maxPow, int fixedVariable, FILE* fileR
         fmpz_init_set_si(len_fmpz,len);
         slong m=fmpz_clog_ui(len_fmpz,2);
         clock_t begin = clock();
-        poly_shift_plus_one_Precomputed2(result, poly, 65, m);
+        poly_shift_plus_one_Precomputed2(result, poly, 129, m);
         clock_t end = clock();
         tabTps[i] = (double)(end - begin);// / CLOCKS_PER_SEC;
 
@@ -129,12 +130,14 @@ int main(int argc, char* argv[])
 
     load_precomputed_polynomials(15);
 
+    mkdir("EfficiencyTests/Results/TS_DivConq", 0777);
+
     // to run or re-run the tests, pass argument : ./flintMultTest -r
     // if not it will only make the graphs as png files in the results folder
     if(argc > 1 && strcmp(argv[1], "-r") == 0) {
         //note : on effectue les tests qu'une fois par taille, on ne fait pas de moyenne sur plusieurs tests pour une même taille
         FILE* fileResults;
-        fileResults = fopen("EfficiencyTests/Results/TS_DivConq_ChangingDegree_Threading.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -148,7 +151,7 @@ int main(int argc, char* argv[])
         fclose(fileResults);
 
 
-        fileResults = fopen("EfficiencyTests/Results/TS_DivConq_ChangingCoeffSize_Threading.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize_Threading.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -163,7 +166,7 @@ int main(int argc, char* argv[])
 
 
 
-        fileResults = fopen("EfficiencyTests/Results/TS_DivConq_ChangingCoeffSize.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -178,7 +181,7 @@ int main(int argc, char* argv[])
         benchmark_DivConq_Implem_Table(maxPow, 1, fileResults);
         fclose(fileResults);
 
-        fileResults = fopen("EfficiencyTests/Results/TS_DivConq_ChangingDegree.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -195,10 +198,10 @@ int main(int argc, char* argv[])
 
     }
 
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq_ChangingDegree_Threading.txt 'time' 0 'exp'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq_ChangingCoeffSize_Threading.txt 'time' 1 'exp'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq_ChangingDegree.txt 'time' 0 'exp'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq_ChangingCoeffSize.txt 'time' 1 'exp'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt 'time' 0 'exp'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize_Threading.txt 'time' 1 'exp'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree.txt 'time' 0 'exp'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize.txt 'time' 1 'exp'");
 
     fmpz_clear(shift);
     for (slong i = 0; i < global_precomputed_size; i++) {

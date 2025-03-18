@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <time.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "../HeaderFiles/functionsForTests.h"
 
 
@@ -43,10 +44,13 @@ void timeEfficiencyMultiplication(void (*func)(fmpz_poly_t,const fmpz_poly_t,con
 int main(int argc, char* argv[]) {
     // to run or re-run the tests, pass argument : ./flintMultTest -r
     // if not it will only make the graphs as png files in the results folder
+    
+    mkdir("EfficiencyTests/Results/flintMultTest", 0777);
     if(argc > 1 && strcmp(argv[1], "-r") == 0) {
         //note : on effectue les tests qu'une fois par taille, on ne fait pas de moyenne sur plusieurs tests pour une même taille
+
         FILE* fileResults;
-        fileResults = fopen("EfficiencyTests/Results/multChangingDegree.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/flintMultTest/multChangingDegree.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -66,7 +70,7 @@ int main(int argc, char* argv[]) {
         fclose(fileResults);
 
 
-        fileResults = fopen("EfficiencyTests/Results/multChangingCoeffSize.txt", "w");
+        fileResults = fopen("EfficiencyTests/Results/flintMultTest/multChangingCoeffSize.txt", "w");
         if (fileResults == NULL) {
             printf("The file is not opened. The program will "
                 "now exit.\n");
@@ -87,8 +91,8 @@ int main(int argc, char* argv[]) {
     }
 
 
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingDegree.txt 'time' 0 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/multChangingCoeffSize.txt 'time' 1 'lin'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/flintMultTest/multChangingDegree.txt 'time' 0 'lin'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/flintMultTest/multChangingCoeffSize.txt 'time' 1 'lin'");
 
     return 0;
 }

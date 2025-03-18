@@ -94,7 +94,7 @@ int main()
     }
     compar_x_plus_1(fileResultsCoeffsSize);
     fclose(fileResultsCoeffsSize);
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/precompute.txt 'time' 0");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/precompute.txt 'time' 0 'lin'");
 
     return 0;
 }

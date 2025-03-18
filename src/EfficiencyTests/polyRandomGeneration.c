@@ -125,7 +125,7 @@ void generateExponent(int maxPower, int fixed){
 }
 
 int main() {
-    //generateLinear(20000, 20000, 500, 500);
+    generateLinear(20000, 20000, 500, 500);
     generateExponent(15, 2047);
 
     return 0;
