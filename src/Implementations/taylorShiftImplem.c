@@ -2,6 +2,8 @@
 #include <flint/fmpz_poly.h>
 #include <flint/fmpz.h>
 #include <flint/fmpq.h>
+#include <flint/fmpz_vec.h>
+#include <flint/ulong_extras.h>
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
@@ -197,7 +199,7 @@ void load_precomputed_polynomials(slong max_m) {
     }
 }
 
-void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slong cut, slong current_m) {
+void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slong cut) {
     if (poly->length < cut) {
         fmpz_t shift;
         fmpz_init(shift);
@@ -207,28 +209,21 @@ void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slo
         return;
     }
 
-    if (current_m == 0) {
+    slong len = fmpz_poly_length(poly);
+    fmpz_t len_fmpz;
+    fmpz_init_set_si(len_fmpz,len);
+    slong m=fmpz_clog_ui(len_fmpz,2);
+    if (m == 0) {
         fmpz_poly_set(g, poly);
         return;
     }
 
-    slong half = 1 << (current_m - 1);
-    fmpz_poly_t f0, f1;
-    fmpz_poly_init(f0);
-    fmpz_poly_init(f1);
-
-    fmpz_poly_set_trunc(f0, poly, half);
-    fmpz_poly_shift_right(f1, poly, half);
-    fmpz_poly_set_trunc(f1, f1, half);
-
-    poly_shift_plus_one_Precomputed2(f0, f0, cut, current_m - 1);
-    poly_shift_plus_one_Precomputed2(f1, f1, cut, current_m - 1);
-
-    fmpz_poly_mul(f1, global_precomputed[current_m - 1], f1);
-    fmpz_poly_add(g, f0, f1);
-
-    fmpz_poly_clear(f0);
-    fmpz_poly_clear(f1);
+    fmpz_t shift;
+    fmpz_init_set_si(shift, 1);
+    divide_conquer_plus_one(g, poly, global_precomputed, m, shift, cut);
+    
+    fmpz_clear(len_fmpz);
+    fmpz_clear(shift);
 }
 
 

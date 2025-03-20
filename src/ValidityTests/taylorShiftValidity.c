@@ -35,11 +35,7 @@ int main()
         printf("Implem of divide and conquer is incorrect :(\n");
 
     
-    slong len = fmpz_poly_length(poly);
-    fmpz_t len_fmpz;
-    fmpz_init_set_si(len_fmpz,len);
-    slong m=fmpz_clog_ui(len_fmpz,2);
-    poly_shift_plus_one_Precomputed2(result, poly, 65, m);
+    poly_shift_plus_one_Precomputed2(result, poly, 65);
     if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of DivConq with precomputation table is valid :)\n");
     else

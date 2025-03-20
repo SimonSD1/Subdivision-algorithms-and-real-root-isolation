@@ -53,6 +53,7 @@ void benchmark_DivConq_Flint(fmpz_t shift, slong maxPow, int fixedVariable, FILE
     for(slong i=0; i<maxPow; i++) {
         readPolyDATA(poly, fixedVariable, i+1, 1);
 
+        flint_set_num_threads(1);
         clock_t begin = clock();
         fmpz_poly_taylor_shift_divconquer(result, poly, shift);
         clock_t end = clock();
@@ -102,12 +103,8 @@ void benchmark_DivConq_Implem_Table(slong maxPow, int fixedVariable, FILE* fileR
     for(slong i=0; i<maxPow; i++) {
         readPolyDATA(poly, fixedVariable, i+1, 1);
         
-        slong len = fmpz_poly_length(poly);
-        fmpz_t len_fmpz;
-        fmpz_init_set_si(len_fmpz,len);
-        slong m=fmpz_clog_ui(len_fmpz,2);
         clock_t begin = clock();
-        poly_shift_plus_one_Precomputed2(result, poly, 129, m);
+        poly_shift_plus_one_Precomputed2(result, poly, 129);
         clock_t end = clock();
         tabTps[i] = (double)(end - begin);// / CLOCKS_PER_SEC;
 
@@ -125,8 +122,7 @@ int main(int argc, char* argv[])
 {
     slong maxPow = 15;
     fmpz_t shift;
-    fmpz_init(shift);
-    fmpz_set_si(shift, 1);
+    fmpz_init_set_si(shift, 1);
 
     load_precomputed_polynomials(15);
 

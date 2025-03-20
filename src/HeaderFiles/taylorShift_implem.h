@@ -15,7 +15,7 @@ void divide_conquer_plus_one(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *pr
 void poly_shift_plus_one(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a,slong cut);
 void poly_shift_plus_one_Precomputed(fmpz_poly_t g, fmpz_poly_t poly, slong cut);
 void load_precomputed_polynomials(slong max_m);
-void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slong cut, slong current_m);
+void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slong cut);
 void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a);
 
 #endif

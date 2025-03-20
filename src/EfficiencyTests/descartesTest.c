@@ -6,32 +6,67 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/descartes.h"
 
 char x = 'x';
 
-void testDescartes()
-{
-    fmpz_poly_t polynomials[4];
-    for (int i = 0; i < 4; i++) {
-        fmpz_poly_init(polynomials[i]);
+
+void benchmarkDescartes(int fixedVariable, FILE* fileResults) {
+    fmpz_poly_t poly;
+    fmpz_poly_init(poly);
+
+    clock_t start, end;
+    double* tabTps = malloc(sizeof(double)*(101));  // car il y a 101 polynômes dans DATA
+
+    for(slong i=0; i <= 100; i++) {
+        readPolyDATA(poly, fixedVariable, i, 0);
+
+        start = clock();
+        descartes_rule(poly);
+        end = clock();
+        tabTps[i] = (double)(end - start);
     }
 
-    fmpz_poly_set_str(polynomials[0], "4  2 -3 0 1");  
-    fmpz_poly_set_str(polynomials[1], "3  1 -2 1");    
-    fmpz_poly_set_str(polynomials[2], "3  1 0 -4");    
-    fmpz_poly_set_str(polynomials[3], "3  1 -3 2"); 
+    fprintTab(tabTps, 101, fileResults);
 
-    for (int i = 0; i < 4; i++) {
-        printf("Polynomial: ");
-        fmpz_poly_print(polynomials[i]);
-        printf("\nNumber of sign changes: %ld\n", descartes_rule(polynomials[i]));
-        fmpz_poly_clear(polynomials[i]);
-    }
+    fmpz_poly_clear(poly);
+    free(tabTps);
 }
 
+
+
 int main()
-{
-    testDescartes();
+{   
+    mkdir("EfficiencyTests/Results/descartesTest", 0777);
+    FILE* fileResults;
+
+    fileResults = fopen("EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt", "w");
+    if (fileResults == NULL) {
+        printf("The file is not opened. The program will "
+            "now exit.\n");
+        exit(0);
+    }
+    fprintf(fileResults, "Sign changes time efficiency (coeffSize=500)\n");    //Title of the plot
+    fprintf(fileResults, "Implementation\n");    //labels of the plot
+    benchmarkDescartes(0, fileResults);  //datas
+    fclose(fileResults);
+
+
+    fileResults = fopen("EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt", "w");
+    if (fileResults == NULL) {
+        printf("The file is not opened. The program will "
+            "now exit.\n");
+        exit(0);
+    }
+    fprintf(fileResults, "Sign changes time efficiency (degree=500)\n");    //Title of the plot
+    fprintf(fileResults, "Implementation\n");    //labels of the plot
+    benchmarkDescartes(1, fileResults);  //datas
+    fclose(fileResults);
+
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt 'time' 0 'lin'");
+    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt 'time' 1 'lin'");
+
+    return 0;
 }
