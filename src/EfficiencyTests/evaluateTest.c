@@ -154,7 +154,7 @@ int main()
 {
     printf("running\n");
     
-    mkdir("EfficiencyTests/Results/evaluateTest", 0777);
+    //mkdir("EfficiencyTests/Results/evaluateTest", 0777);
 
     FILE *fileResultsDegreeHalf = fopen("EfficiencyTests/Results/evaluateTest/EvaluateHalfDegree.txt", "w");
     if (fileResultsDegreeHalf == NULL)
