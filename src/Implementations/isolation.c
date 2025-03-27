@@ -79,15 +79,78 @@ int fmpz_poly_is_half_root(fmpz_poly_t pol)
     }
 }
 
-void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol){
+// on calcul pol(1/(x+1))
+void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol)
+{
     fmpz_poly_init(result);
 
+    // taylor shift (result(x)=pol(x+1))
+    fmpz_t one;
+    fmpz_init_set_ui(one, 1);
+    // on renverse
+    // f(1/x) = ( f_0 *x^d + f_1*x^(d-1) ) / x^d
+    // pour compter les changement de signe on a pas besoin du denominateur
+    int degre = fmpz_poly_degree(pol);
 
+    // reverse et shift
+    fmpz_poly_reverse(result, pol, degre + 1);
+    fmpz_poly_taylor_shift_divconquer(result, result, one);
+}
+
+void split_left(fmpz_poly_t result, const fmpz_poly_t pol)
+{
+    // pol(x/2) * 2^d pour éviter les dénominateurs
+    // Pour chaque coefficient a_i, on calcule a_i * 2^(d-i)
+    slong d = fmpz_poly_degree(pol);
+
+    fmpz_poly_init(result);
+    fmpz_poly_fit_length(result, d + 1);
+
+    fmpz_t coeff;
+    fmpz_init(coeff);
+
+    for (slong i = 0; i <= d; i++)
+    {
+        fmpz_poly_get_coeff_fmpz(coeff, pol, i);
+        fmpz_mul_2exp(coeff, coeff, d - i);
+        fmpz_poly_set_coeff_fmpz(result, i, coeff);
+    }
+
+    fmpz_clear(coeff);
+}
+
+void split_right(fmpz_poly_t result, const fmpz_poly_t pol)
+{
+    // pol((1+x)/2) * 2^d pour éviter les dénominateurs
+    // Pour chaque coefficient a_i, on calcule a_i * 2^(d-i)
+    slong d = fmpz_poly_degree(pol);
+
+    fmpz_poly_init(result);
+    fmpz_poly_fit_length(result, d + 1);
+
+    fmpz_t coeff;
+    fmpz_init(coeff);
+
+    fmpz_t one;
+    fmpz_init_set_ui(one, 1);
+
+    for (slong i = 0; i <= d; i++)
+    {
+        fmpz_poly_get_coeff_fmpz(coeff, pol, i);
+        fmpz_mul_2exp(coeff, coeff, d - i);
+        fmpz_poly_set_coeff_fmpz(result, i, coeff);
+    }
+
+    // maintenant on taylor shift
+
+    fmpz_poly_taylor_shift_divconquer(result, result, one);
+
+    fmpz_clear(coeff);
 }
 
 // Cette fonction va isoler les racines de pol sur l'intervalle
 //(c / 2^k, (c+1) / 2^k)
-void isolation(fmpz_poly_t pol, fmpz_t c, __int32_t k, solution *solutions, int *nb_sol)
+void isolation(fmpz_poly_t pol, int c, int k, solution *solutions, int *nb_sol)
 {
     //- étape 1 : est-ce que 0 est racine -> à implémenter et mettre à jour ce qui
     // doit être mis à jour en fonction du résultat (penser à diviser le polynôme par
@@ -95,6 +158,9 @@ void isolation(fmpz_poly_t pol, fmpz_t c, __int32_t k, solution *solutions, int 
 
     fmpz_t eval;
     fmpz_init(eval);
+
+    fmpz_poly_t var_changed;
+    fmpz_poly_init(var_changed);
 
     evaluate_0(eval, pol);
 
@@ -104,17 +170,24 @@ void isolation(fmpz_poly_t pol, fmpz_t c, __int32_t k, solution *solutions, int 
         div_by_x(pol);
 
         // ajouter la racine a la liste des solutions
-        *solutions[*nb_sol].c = c;
-        *solutions[*nb_sol].k = k;
-        *solutions[*nb_sol].h = 0;
-        *nb_sol++;
-    }
+        printf("ajoute interval : c=%d, k=%d\n\n", c, k);
 
+        solutions[*nb_sol].c = c;
+        solutions[*nb_sol].k = k;
+        solutions[*nb_sol].h = 0;
+        (*nb_sol)++;
+    }
     // étape 3 : calculer le nombre de variations de signes des coefficients de pol sur [0;+inf]
     // on utilise un changement de variable
-    int sign_changes = descartes_rule(pol);
 
-    printf("\nsigne_changes = %d \n", sign_changes);
+    var_change_to_inf(var_changed, pol);
+
+    printf("Polynôme ver changed : ");
+    fmpz_poly_print_pretty(var_changed, "x");
+    printf("\n");
+    printf("\n");
+
+    int sign_changes = descartes_rule(var_changed);
 
     if (sign_changes == 0)
     {
@@ -126,23 +199,33 @@ void isolation(fmpz_poly_t pol, fmpz_t c, __int32_t k, solution *solutions, int 
     {
         // il y a exactement une solution dans cet interval
 
-        *solutions[*nb_sol].c = c;
-        *solutions[*nb_sol].k = k;
-        *nb_sol++;
+        printf("ajoute interval : c=%d, k=%d\n\n", c, k);
+        solutions[*nb_sol].c = c;
+        solutions[*nb_sol].k = k;
+        solutions[*nb_sol].h = 1;
+        (*nb_sol)++;
         return;
     }
 
     else
     {
         // il y a au plus 2 solution dans cet interval, fait la bisection
+        fmpz_poly_t pol_left;
+        fmpz_poly_t pol_right;
 
-        // on appel a gauche sur p(x/2)
+        split_left(pol_left, pol);
+        split_right(pol_right, pol);
 
-        
+        printf("Polynôme guauche : ");
+        fmpz_poly_print_pretty(pol_left, "x");
+        printf("\n");
 
-        isolation()
+        printf("Polynôme ver droite : ");
+        fmpz_poly_print_pretty(pol_right, "x");
+        printf("\n");
+        printf("\n");
 
-
-        // on appel a droite sur p((x+1)/2)
+        isolation(pol_left, 2 * c, k + 1, solutions, nb_sol);
+        isolation(pol_right, 2 * c + 1, k + 1, solutions, nb_sol);
     }
 }

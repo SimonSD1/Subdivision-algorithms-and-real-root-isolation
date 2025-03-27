@@ -5,16 +5,18 @@
 #include <flint/fmpz_poly.h>
 #include "evaluate.h"
 #include "descartes.h"
+#include "mult_x_plus_one.h"
+#include <stdlib.h>
 
 typedef struct solution{
     // solution : (a / 2^p, (a+1) / 2^p)
-    fmpz_t c;
-    fmpz_t k;
-    fmpz_t h;
+    int c;
+    int k;
+    int h;
 } solution;
 
 void div_by_x(fmpz_poly_t pol);
 
-void isolation(fmpz_poly_t pol, fmpz_t c, __int32_t k, solution* solutions ,int* nb_sol);
+void isolation(fmpz_poly_t pol, int c, int k, solution* solutions ,int* nb_sol);
 
 #endif
