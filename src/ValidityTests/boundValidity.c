@@ -18,7 +18,7 @@ void verifyBounds()
     int fixedVariable = 0;
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i, 0);
+        readPolyDATA(poly, fixedVariable, i);
 
         // local_max_bound_implementation(bound, poly);
         fmpz_poly_bound_roots(bound, poly);
@@ -47,7 +47,7 @@ void verifyBounds()
 
 void testBounds(fmpz_t bound, fmpz_poly_t poly) {
     printf("Flint Implementation //////////////\n");
-    printf("Testing polynomial:\n");
+    printf("Testing polynomial: ");
     fmpz_poly_print_pretty(poly, "x");
 
     Lagrange_bound(bound, poly);
@@ -78,7 +78,7 @@ int main()
 
     testBounds(bound, poly);
     printf("\n\nSageMath Implementation //////////////\n");
-    system("sage ValidityTests/bound.sage 'x^4 - 16'");
+    system("sage src/ValidityTests/bound.sage 'x^4 - 16'");
 
     fmpz_poly_clear(poly);
     fmpz_clear(bound);

@@ -50,7 +50,7 @@ void comparEvaluate(FILE *fileResultsHalf,FILE * fileResults1, FILE * fileResult
 
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i, 0);
+        readPolyDATA(poly, fixedVariable, i);
 
 
         // half
@@ -154,21 +154,21 @@ int main()
 {
     printf("running\n");
     
-    //mkdir("EfficiencyTests/Results/evaluateTest", 0777);
+    //mkdir("src/EfficiencyTests/Results/evaluateTest", 0777);
 
-    FILE *fileResultsDegreeHalf = fopen("EfficiencyTests/Results/evaluateTest/EvaluateHalfDegree.txt", "w");
+    FILE *fileResultsDegreeHalf = fopen("src/EfficiencyTests/Results/evaluateTest/EvaluateHalfDegree.txt", "w");
     if (fileResultsDegreeHalf == NULL)
     {
         printf("Failed to open EvaluateHalfDegree.txt.\n");
         exit(0);
     }
-    FILE *fileResultsDegree1 = fopen("EfficiencyTests/Results/evaluateTest/Evaluate1Degree.txt", "w");
+    FILE *fileResultsDegree1 = fopen("src/EfficiencyTests/Results/evaluateTest/Evaluate1Degree.txt", "w");
     if (fileResultsDegree1 == NULL)
     {
         printf("Failed to open Evaluate1Degree.txt.\n");
         exit(0);
     }
-    FILE *fileResultsDegree0 = fopen("EfficiencyTests/Results/evaluateTest/Evaluate0Degree.txt", "w");
+    FILE *fileResultsDegree0 = fopen("src/EfficiencyTests/Results/evaluateTest/Evaluate0Degree.txt", "w");
     if (fileResultsDegree0 == NULL)
     {
         printf("Failed to open Evaluate0Degree.txt.\n");
@@ -180,25 +180,25 @@ int main()
     fclose(fileResultsDegreeHalf);
     fclose(fileResultsDegree0);
     fclose(fileResultsDegree1);
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/EvaluateHalfDegree.txt 'time' 0 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/Evaluate0Degree.txt 'time' 0 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/Evaluate1Degree.txt 'time' 0 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/EvaluateHalfDegree.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/Evaluate0Degree.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/Evaluate1Degree.txt 'time' 0");
 
 
     
-    FILE *fileResultsCoeffsHalf = fopen("EfficiencyTests/Results/evaluateTest/EvaluateHalfCoeffs.txt", "w");
+    FILE *fileResultsCoeffsHalf = fopen("src/EfficiencyTests/Results/evaluateTest/EvaluateHalfCoeffs.txt", "w");
     if (fileResultsCoeffsHalf == NULL)
     {
         printf("Failed to open EvaluateHalfCoeffs.txt.\n");
         exit(0);
     }
-    FILE *fileResultsCoeffs1 = fopen("EfficiencyTests/Results/evaluateTest/Evaluate1Coeffs.txt", "w");
+    FILE *fileResultsCoeffs1 = fopen("src/EfficiencyTests/Results/evaluateTest/Evaluate1Coeffs.txt", "w");
     if (fileResultsCoeffs1 == NULL)
     {
         printf("Failed to open Evaluate1Coeffs.txt.\n");
         exit(0);
     }
-    FILE *fileResultsCoeffs0 = fopen("EfficiencyTests/Results/evaluateTest/Evaluate0Coeffs.txt", "w");
+    FILE *fileResultsCoeffs0 = fopen("src/EfficiencyTests/Results/evaluateTest/Evaluate0Coeffs.txt", "w");
     if (fileResultsCoeffs0 == NULL)
     {
         printf("Failed to open Evaluate0Coeffs.txt.\n");
@@ -209,9 +209,9 @@ int main()
     fclose(fileResultsCoeffsHalf);
     fclose(fileResultsCoeffs0);
     fclose(fileResultsCoeffs1);
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/EvaluateHalfCoeffs.txt 'time' 1 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/Evaluate1Coeffs.txt 'time' 1 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/evaluateTest/Evaluate0Coeffs.txt 'time' 1 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/EvaluateHalfCoeffs.txt 'time' 1");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/Evaluate1Coeffs.txt 'time' 1");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/evaluateTest/Evaluate0Coeffs.txt 'time' 1");
 
     return 0;
 }

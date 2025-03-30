@@ -32,8 +32,8 @@ void x_plus_1_powerNewton(fmpz_poly_t result, slong PowerOf2){
 
 
 void write_x_plus_1_power_Newton(slong maxSize) {
-    mkdir("../DATA", 0777);  // Create DATA if not exists
-    mkdir("../DATA/Precomputation_DivConq_Newton", 0777);
+    mkdir("DATA", 0777);  // Create DATA if not exists
+    mkdir("DATA/Precomputation_DivConq_Newton", 0777);
 
     FILE* filePrecomp;
     char pathFile[80];
@@ -43,7 +43,7 @@ void write_x_plus_1_power_Newton(slong maxSize) {
 
     for(slong i=0; i<=maxSize; i++) {
         slong exponent = 1 << i;
-        sprintf(pathFile, "../DATA/Precomputation_DivConq_Newton/precomputation%d.txt", (int) i);
+        sprintf(pathFile, "DATA/Precomputation_DivConq_Newton/precomputation%d.txt", (int) i);
         filePrecomp = fopen(pathFile, "w");
         
         if (filePrecomp == NULL) {
@@ -54,10 +54,9 @@ void write_x_plus_1_power_Newton(slong maxSize) {
 
         x_plus_1_powerNewton(temp, exponent);
         fmpz_poly_fprint(filePrecomp, temp);
+        fclose(filePrecomp);
     }
 
-
-    fclose(filePrecomp);
     fmpz_poly_clear(temp);
 }
 
@@ -86,14 +85,14 @@ void write_x_plus_1_power(slong maxSize) {
     }
 
 
-    mkdir("../DATA", 0777);  // Create DATA if not exists
-    mkdir("../DATA/Precomputation_DivConq", 0777);
+    mkdir("DATA", 0777);  // Create DATA if not exists
+    mkdir("DATA/Precomputation_DivConq", 0777);
 
     FILE* filePrecomp;
     char pathFile[80];
 
     for(slong i=0; i<=maxSize; i++) {
-        sprintf(pathFile, "../DATA/Precomputation_DivConq/precomputation%d.txt", (int) i);
+        sprintf(pathFile, "DATA/Precomputation_DivConq/precomputation%d.txt", (int) i);
         filePrecomp = fopen(pathFile, "w");
 
         if (filePrecomp == NULL) {
@@ -103,10 +102,10 @@ void write_x_plus_1_power(slong maxSize) {
         }
 
         fmpz_poly_fprint(filePrecomp, precomputed[i]);
+        fclose(filePrecomp);
     }
 
 
-    fclose(filePrecomp);
     for (slong i = 0; i <= maxSize; i++)
         fmpz_poly_clear(precomputed[i]);
     flint_free(precomputed);
@@ -128,8 +127,8 @@ int main() {
     elapsed_time = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("Time taken for Newton: %f seconds\n", elapsed_time);*/
 
-    //Time taken for naive: 1.205814 seconds
-    //Time taken for Newton: 1.642244 seconds
+    //Time taken for naive: 4.769573 seconds
+    //Time taken for Newton: 6.618666 seconds
 
     return 0;
 }

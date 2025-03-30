@@ -46,7 +46,7 @@ void compar_x_plus_1(FILE *fileResults, int fixedVariable)
 
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i, 0);
+        readPolyDATA(poly, fixedVariable, i);
 
         start = clock();
         mult_x_plus_1_power(result, poly, power);
@@ -84,7 +84,7 @@ int main()
 {
     printf("running");
 
-    FILE *fileResultsCoeffsSize = fopen("EfficiencyTests/Results/x_plus_1.txt", "w");
+    FILE *fileResultsCoeffsSize = fopen("src/EfficiencyTests/Results/x_plus_1.txt", "w");
     if (fileResultsCoeffsSize == NULL)
     {
         printf("Failed to open.\n");
@@ -92,7 +92,7 @@ int main()
     }
     compar_x_plus_1(fileResultsCoeffsSize, 1);
     fclose(fileResultsCoeffsSize);
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/x_plus_1.txt 'time' 0 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/x_plus_1.txt 'time' 0");
 
     return 0;
 }

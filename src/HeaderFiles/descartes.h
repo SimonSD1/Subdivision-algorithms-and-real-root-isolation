@@ -9,6 +9,6 @@
 #ifndef DESCARTES_H
 #define DESCARTES_H
 
-slong descartes_rule(fmpz_poly_t poly);
+slong descartes_rule(const fmpz_poly_t poly);
 
 #endif

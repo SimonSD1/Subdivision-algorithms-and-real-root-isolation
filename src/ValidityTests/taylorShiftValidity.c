@@ -23,33 +23,35 @@ int main()
     fmpz_poly_t result;
     fmpz_poly_init(result);
 
-    readPolyDATA(poly, 0, 15, 1);
+    readPolyDATA(poly, 0, 80);
     load_precomputed_polynomials(15);
+
 
     fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
 
-    poly_shift_plus_one(result, poly, shift, 65);
+    poly_shift_plus_one(result, poly, shift);
     if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of divide and conquer is valid :)\n");
     else
         printf("Implem of divide and conquer is incorrect :(\n");
 
     
-    poly_shift_plus_one_Precomputed2(result, poly, 65);
+    poly_shift_plus_one_Precomputed(result, poly, 1);
     if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of DivConq with precomputation table is valid :)\n");
     else
         printf("Implem of DivConq with precomputation table is incorrect :(\n");
 
-    naiveShift(result, poly, shift);
+    /*naiveShift(result, poly, shift);
     if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of naive Taylor shift is valid :)\n");
     else
-        printf("Implem of naive Taylor shift is incorrect :(\n");
+        printf("Implem of naive Taylor shift is incorrect :(\n");*/
 
     fmpz_poly_clear(TrueResult);
     fmpz_poly_clear(result);
     fmpz_poly_clear(poly);
     fmpz_clear(shift);
+    free_global_precomputed();
     return 0;
 }

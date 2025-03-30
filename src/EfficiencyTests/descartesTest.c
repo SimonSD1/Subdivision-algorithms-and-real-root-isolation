@@ -21,7 +21,7 @@ void benchmarkDescartes(int fixedVariable, FILE* fileResults) {
     double* tabTps = malloc(sizeof(double)*(101));  // car il y a 101 polynômes dans DATA
 
     for(slong i=0; i <= 100; i++) {
-        readPolyDATA(poly, fixedVariable, i, 0);
+        readPolyDATA(poly, fixedVariable, i);
 
         start = clock();
         descartes_rule(poly);
@@ -39,10 +39,10 @@ void benchmarkDescartes(int fixedVariable, FILE* fileResults) {
 
 int main()
 {   
-    mkdir("EfficiencyTests/Results/descartesTest", 0777);
+    mkdir("src/EfficiencyTests/Results/descartesTest", 0777);
     FILE* fileResults;
 
-    fileResults = fopen("EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt", "w");
+    fileResults = fopen("src/EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt", "w");
     if (fileResults == NULL) {
         printf("The file is not opened. The program will "
             "now exit.\n");
@@ -54,7 +54,7 @@ int main()
     fclose(fileResults);
 
 
-    fileResults = fopen("EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt", "w");
+    fileResults = fopen("src/EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt", "w");
     if (fileResults == NULL) {
         printf("The file is not opened. The program will "
             "now exit.\n");
@@ -65,8 +65,8 @@ int main()
     benchmarkDescartes(1, fileResults);  //datas
     fclose(fileResults);
 
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt 'time' 0 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt 'time' 1 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/descartesTest/descartesChangingDegree.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/descartesTest/descartesChangingCoeffSize.txt 'time' 1");
 
     return 0;
 }

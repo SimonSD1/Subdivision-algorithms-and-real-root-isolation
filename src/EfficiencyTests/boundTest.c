@@ -34,7 +34,7 @@ void comparBounds(FILE *fileResultsSpeed,FILE *fileResultsValues)
     int fixedVariable = 0;
     for (slong i = 0; i <= 100; i++)
     {
-        readPolyDATA(poly, fixedVariable, i, 0);
+        readPolyDATA(poly, fixedVariable, i);
 
 
         start = clock();
@@ -98,12 +98,12 @@ int main(int argc, char *argv[])
     if (argc > 1 && strcmp(argv[1], "-r") == 0)
     {
         
-        mkdir("EfficiencyTests/Results/boundTest", 0777);
+        mkdir("src/EfficiencyTests/Results/boundTest", 0777);
         printf("running");
         FILE *fileResultsSpeed;
         FILE *fileResultsValues;
-        fileResultsSpeed = fopen("EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt", "w");
-        fileResultsValues = fopen("EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt", "w");
+        fileResultsSpeed = fopen("src/EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt", "w");
+        fileResultsValues = fopen("src/EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt", "w");
 
         if (fileResultsSpeed == NULL || fileResultsValues == NULL)
         {
@@ -114,8 +114,8 @@ int main(int argc, char *argv[])
 
         comparBounds(fileResultsSpeed,fileResultsValues);
     }
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt 'time' 0 'lin'");
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt 'time' 0 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/boundTest/boundSpeedChangingDegree.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/boundTest/boundValuesChangingDegree.txt 'time' 1");
 
     return 0;
 }

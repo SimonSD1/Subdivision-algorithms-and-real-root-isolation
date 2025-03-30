@@ -4,14 +4,15 @@
 #include <flint/fmpq.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 #include "../HeaderFiles/bound.h"
 #include "../HeaderFiles/functionsForTests.h"
+#include "../HeaderFiles/descartes.h"
 
-#include <string.h>
 
-int descartes_rule(const fmpz_poly_t poly) {
-    int sign_changes = 0;
-    int last_sign = 0;
+slong descartes_rule(const fmpz_poly_t poly) {
+    slong sign_changes = 0;
+    slong last_sign = 0;
     slong len = fmpz_poly_length(poly);
 
     fmpz_t coeff;

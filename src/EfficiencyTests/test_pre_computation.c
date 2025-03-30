@@ -86,7 +86,7 @@ int main()
 {
     printf("running");
 
-    FILE *fileResultsCoeffsSize = fopen("EfficiencyTests/Results/precompute.txt", "w");
+    FILE *fileResultsCoeffsSize = fopen("src/EfficiencyTests/Results/precompute.txt", "w");
     if (fileResultsCoeffsSize == NULL)
     {
         printf("Failed to open.\n");
@@ -94,7 +94,7 @@ int main()
     }
     compar_x_plus_1(fileResultsCoeffsSize);
     fclose(fileResultsCoeffsSize);
-    system("python3 EfficiencyTests/plotGenerator.py EfficiencyTests/Results/precompute.txt 'time' 0 'lin'");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/precompute.txt 'time' 0");
 
     return 0;
 }

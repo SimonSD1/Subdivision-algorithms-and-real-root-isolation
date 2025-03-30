@@ -8,14 +8,16 @@
 #ifndef TAYLOR_SHIFT_IMPLEM_H
 #define TAYLOR_SHIFT_IMPLEM_H
 
-extern fmpz_poly_t *global_precomputed;
+extern fmpz **global_precomputed;  // Array of fmpz vectors
+extern slong *global_precomputed_len; // Array of vector lengths
 extern slong global_precomputed_size;
 
-void divide_conquer_plus_one(fmpz_poly_t g, const fmpz_poly_t f, fmpz_poly_t *precomputed, slong k, fmpz_t a, slong cut);
-void poly_shift_plus_one(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a,slong cut);
-void poly_shift_plus_one_Precomputed(fmpz_poly_t g, fmpz_poly_t poly, slong cut);
+
+void poly_shift_plus_one(fmpz_poly_t g, fmpz_poly_t poly, fmpz_t a);
 void load_precomputed_polynomials(slong max_m);
-void poly_shift_plus_one_Precomputed2(fmpz_poly_t g, const fmpz_poly_t poly, slong cut);
+void free_global_precomputed();
+void poly_shift_plus_one_Precomputed(fmpz_poly_t g, const fmpz_poly_t poly);
+void poly_shift_plus_one_Non_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly);
 void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a);
 
 #endif
