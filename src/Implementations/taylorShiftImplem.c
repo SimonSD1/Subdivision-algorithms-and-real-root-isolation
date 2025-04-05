@@ -134,11 +134,6 @@ void poly_shift_plus_one_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly)
 }
 
 
-
-
-
-
-
 void divide_conquer_recursive2(fmpz * poly, slong len) {
     fmpz *tmp, *tmp2;
     slong len1, len2;
@@ -188,6 +183,7 @@ void divide_conquer_recursive2(fmpz * poly, slong len) {
     to do this in all branches of the tree, but since it's just O(d),
     it's going to be cheap compared to the actual multiplications
     anyway. */
+    clock_t begin = clock();
     fmpz_one(tmp);
     for (slong k = 1; k <= len1; k++)
     {
@@ -201,6 +197,9 @@ void divide_conquer_recursive2(fmpz * poly, slong len) {
            fmpz_divexact_ui(tmp + k, tmp + k, k);
         }
     }
+    clock_t end = clock();
+
+    printf("temps pris pour (x+c)^len1 = %lf\n",(double)(end - begin));
 
 
     _fmpz_poly_mul(tmp2, tmp, len1 + 1, poly + len1, len2);
@@ -215,6 +214,8 @@ void divide_conquer_recursive2(fmpz * poly, slong len) {
 void poly_shift_plus_one_Non_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly) {
     if (poly != result)
         fmpz_poly_set(result, poly);
+
+    printf("bonjoru");
 
     divide_conquer_recursive2(result->coeffs, result->length);
 }

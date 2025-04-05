@@ -1,231 +1,220 @@
 #include "../HeaderFiles/isolation.h"
+#include <flint/fmpz.h>
+#include <flint/fmpz_poly.h>
 
-// Voici ce que je vous propose d'implémenter :
-// Une fonction qui prend en entrée :
-//* Un polynôme pol en une variable
-//* c un entier flint (fmpz_t)
-//* k un entier machine (int32_t)
-//* une tableau de solutions codées sous la forme (a, p) -> une solution est dans
-//(a / 2^p, (a+1) / 2^p) => ici il faut définir les structures de données
-// adéquates.
-//* un pointeur sur un entier qui encode le nombre de racines trouvées.
-//
-// Cette fonction va isoler les racines de pol sur l'intervalle
-//(c / 2^k, (c+1) / 2^k)
-//
-// MAIS on suppose que les changements de variables ont été faits sur pol
-// pour qu'on soit ramené à regarder les racines dans l'intervalle (0, 1)
-//
-//- étape 1 : est-ce que 0 est racine -> à implémenter et mettre à jour ce qui
-// doit être mis à jour en fonction du résultat (penser à diviser le polynôme par
-// x)
-//
-//- étape 2 : est-ce que 1/2 est racine ?
-//
-//- étape 3 : calculer le nombre de variations de signes des coefficients de pol
-//
-//    (a) Si ce nombre est 0 que pouvez-vous en déduire ?
-//    (b) Si ce nombre n'est pas 0 : appliquer la règle des signes de descartes à P
-//    tel que P = Q(X+1) où Q est le numérateur de pol( 1/ x ) -> récupérer le nbre
-//    de variations de signes (on l'appelle nb) => ça revient à appliquer Descartes
-//    sur pol( 1 / (x+1))
-//
-//    => faire une fonction "naive" mais aussi penser à ce qu'on a dit sur la
-//    croissance des coefficients quand on fait le Taylor shift
-//
-//    => qu'est-ce que nb dit sur le nbre de racines ?
-//
-//    -> distinguer le cas nb = 0
-//    -> distinguer le cas nb = 1
-//    -> distinguer le cas nb >= 2
-//       => dans ce cas, il y a une bisection et il faut rappeler l'algo sur les
-//       intervalles (0, 1/2) puis (1/2, 1) mais attention, dans les appels
-//       récursifs il faut bien mettre à jour c et k.
+
+fmpz_t FMPZ_ONE;
 
 void div_by_x(fmpz_poly_t pol)
 {
-    fmpz_poly_shift_right(pol, pol, 1);
+  fmpz_poly_shift_right(pol, pol, 1);
 }
 
 int fmpz_poly_is_half_root(fmpz_poly_t pol)
 {
+  fmpz_t numerator;
+  fmpz_init(numerator);
+  fmpz_zero(numerator);
 
-    fmpz_t numerator;
-    fmpz_init(numerator);
-    fmpz_zero(numerator);
+  fmpz_t temp;
+  fmpz_init(temp);
 
-    fmpz_t temp;
-    fmpz_init(temp);
+  slong d = pol->length - 1;
 
-    slong d = pol->length - 1;
+  for (slong i = d; i >= 0; i--)
+  {
+    fmpz_poly_get_coeff_fmpz(temp, pol, i);
+    fmpz_mul_2exp(temp, temp, d - i);
+    fmpz_add(numerator, numerator, temp);
+  }
 
-    for (slong i = d; i >= 0; i--)
-    {
-        fmpz_poly_get_coeff_fmpz(temp, pol, i);
-        fmpz_mul_2exp(temp, temp, d - i);
-        fmpz_add(numerator, numerator, temp);
-    }
+  fmpz_clear(numerator);
+  fmpz_clear(temp);
 
-    fmpz_clear(numerator);
-    fmpz_clear(temp);
-
-    if (fmpz_is_zero(numerator))
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+  if (fmpz_is_zero(numerator))
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 // on calcul pol(1/(x+1))
 void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol)
 {
-    fmpz_poly_init(result);
+  fmpz_poly_init(result);
 
-    // taylor shift (result(x)=pol(x+1))
-    fmpz_t one;
-    fmpz_init_set_ui(one, 1);
-    // on renverse
-    // f(1/x) = ( f_0 *x^d + f_1*x^(d-1) ) / x^d
-    // pour compter les changement de signe on a pas besoin du denominateur
-    int degre = fmpz_poly_degree(pol);
+  // taylor shift (result(x)=pol(x+1))
+  // on renverse
+  // f(1/x) = ( f_0 *x^d + f_1*x^(d-1) ) / x^d
+  // pour compter les changement de signe on a pas besoin du denominateur
+  int degre = fmpz_poly_degree(pol);
 
-    // reverse et shift
-    fmpz_poly_reverse(result, pol, degre + 1);
-    fmpz_poly_taylor_shift_divconquer(result, result, one);
+  // reverse et shift
+  fmpz_poly_reverse(result, pol, degre + 1);
+  fmpz_poly_taylor_shift_divconquer(result, result, FMPZ_ONE);
 }
 
+// pol(x/2) * 2^d to avoid denominator
 void split_left(fmpz_poly_t result, const fmpz_poly_t pol)
 {
-    // pol(x/2) * 2^d pour éviter les dénominateurs
-    // Pour chaque coefficient a_i, on calcule a_i * 2^(d-i)
-    slong d = fmpz_poly_degree(pol);
+  // for each coeff a_i, we compute a_i * 2^(d-i)
+  slong d = fmpz_poly_degree(pol);
 
-    fmpz_poly_init(result);
-    fmpz_poly_fit_length(result, d + 1);
+  fmpz_poly_init(result);
+  fmpz_poly_fit_length(result, d + 1);
 
-    fmpz_t coeff;
-    fmpz_init(coeff);
+  fmpz_t coeff;
+  fmpz_init(coeff);
 
-    for (slong i = 0; i <= d; i++)
-    {
-        fmpz_poly_get_coeff_fmpz(coeff, pol, i);
-        fmpz_mul_2exp(coeff, coeff, d - i);
-        fmpz_poly_set_coeff_fmpz(result, i, coeff);
-    }
+  for (slong i = 0; i <= d; i++)
+  {
+    fmpz_poly_get_coeff_fmpz(coeff, pol, i);
+    fmpz_mul_2exp(coeff, coeff, d - i);
+    fmpz_poly_set_coeff_fmpz(result, i, coeff);
+  }
 
-    fmpz_clear(coeff);
+  fmpz_clear(coeff);
 }
 
+// pol((1+x)/2) * 2^d to avoid denominator
 void split_right(fmpz_poly_t result, const fmpz_poly_t pol)
 {
-    // pol((1+x)/2) * 2^d pour éviter les dénominateurs
-    // Pour chaque coefficient a_i, on calcule a_i * 2^(d-i)
-    slong d = fmpz_poly_degree(pol);
+  // for each coeff a_i, we compute a_i * 2^(d-i)
+  slong d = fmpz_poly_degree(pol);
 
-    fmpz_poly_init(result);
-    fmpz_poly_fit_length(result, d + 1);
+  fmpz_poly_init(result);
+  fmpz_poly_fit_length(result, d + 1);
 
-    fmpz_t coeff;
-    fmpz_init(coeff);
+  fmpz_t coeff;
+  fmpz_init(coeff);
 
-    fmpz_t one;
-    fmpz_init_set_ui(one, 1);
+  for (slong i = 0; i <= d; i++)
+  {
+    fmpz_poly_get_coeff_fmpz(coeff, pol, i);
+    fmpz_mul_2exp(coeff, coeff, d - i);
+    fmpz_poly_set_coeff_fmpz(result, i, coeff);
+  }
 
-    for (slong i = 0; i <= d; i++)
-    {
-        fmpz_poly_get_coeff_fmpz(coeff, pol, i);
-        fmpz_mul_2exp(coeff, coeff, d - i);
-        fmpz_poly_set_coeff_fmpz(result, i, coeff);
-    }
-
-    // maintenant on taylor shift
-
-    fmpz_poly_taylor_shift_divconquer(result, result, one);
-
-    fmpz_clear(coeff);
+  fmpz_poly_taylor_shift_divconquer(result, result, FMPZ_ONE);
+  fmpz_clear(FMPZ_ONE);
+  fmpz_clear(coeff);
 }
 
-// Cette fonction va isoler les racines de pol sur l'intervalle
-//(c / 2^k, (c+1) / 2^k)
-void isolation(fmpz_poly_t pol, int c, int k, solution *solutions, int *nb_sol)
+void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol)
 {
-    //- étape 1 : est-ce que 0 est racine -> à implémenter et mettre à jour ce qui
-    // doit être mis à jour en fonction du résultat (penser à diviser le polynôme par
-    // x)
+  fmpz_t eval;
+  fmpz_init(eval);
 
-    fmpz_t eval;
-    fmpz_init(eval);
+  fmpz_poly_t var_changed;
+  fmpz_poly_init(var_changed);
 
-    fmpz_poly_t var_changed;
-    fmpz_poly_init(var_changed);
+  evaluate_0(eval, pol);
 
-    evaluate_0(eval, pol);
+  if (fmpz_is_zero(eval))
+  {
+    // if 0 is solution we can divide by x
+    div_by_x(pol);
+    // add the solution to the list
+    fmpz_set(solutions[*nb_sol].c, c);
+    solutions[*nb_sol].k = k;
+    solutions[*nb_sol].is_exact = 1;
+    (*nb_sol)++;
+  }
 
-    if (fmpz_is_zero(eval))
-    {
-        // on divise par x
-        div_by_x(pol);
+  var_change_to_inf(var_changed, pol);
 
-        // ajouter la racine a la liste des solutions
-        printf("ajoute interval : c=%d, k=%d\n\n", c, k);
+  int sign_changes = descartes_rule(var_changed);
 
-        solutions[*nb_sol].c = c;
-        solutions[*nb_sol].k = k;
-        solutions[*nb_sol].h = 0;
-        (*nb_sol)++;
-    }
-    // étape 3 : calculer le nombre de variations de signes des coefficients de pol sur [0;+inf]
-    // on utilise un changement de variable
+  if (sign_changes == 0)
+  {
+    // nothing in this interval
+    return;
+  }
 
-    var_change_to_inf(var_changed, pol);
+  else if (sign_changes == 1)
+  {
+    // exactly one solution in this interval
+    fmpz_set(solutions[*nb_sol].c, c);
+    solutions[*nb_sol].k = k;
+    solutions[*nb_sol].is_exact = 0;
+    (*nb_sol)++;
+    return;
+  }
 
-    printf("Polynôme ver changed : ");
-    fmpz_poly_print_pretty(var_changed, "x");
-    printf("\n");
-    printf("\n");
+  else
+  {
+    // at most 2 or more solution in this interval, we use bisection
+    fmpz_poly_t pol_left;
+    fmpz_poly_t pol_right;
 
-    int sign_changes = descartes_rule(var_changed);
+    split_left(pol_left, pol);
+    split_right(pol_right, pol);
 
-    if (sign_changes == 0)
-    {
-        // rien dans cet interval
-        return;
-    }
+    fmpz_t c_transformed;
+    fmpz_mul_2exp(c_transformed, c, 1);
 
-    else if (sign_changes == 1)
-    {
-        // il y a exactement une solution dans cet interval
+    isolation_recursive(pol_left, c_transformed, k + 1, solutions, nb_sol);
 
-        printf("ajoute interval : c=%d, k=%d\n\n", c, k);
-        solutions[*nb_sol].c = c;
-        solutions[*nb_sol].k = k;
-        solutions[*nb_sol].h = 1;
-        (*nb_sol)++;
-        return;
-    }
+    fmpz_add_ui(c_transformed, c_transformed, 1);
 
-    else
-    {
-        // il y a au plus 2 solution dans cet interval, fait la bisection
-        fmpz_poly_t pol_left;
-        fmpz_poly_t pol_right;
+    isolation_recursive(pol_right, c_transformed, k + 1, solutions, nb_sol);
+  }
 
-        split_left(pol_left, pol);
-        split_right(pol_right, pol);
+  fmpz_clear(eval);
+  fmpz_poly_clear(var_changed);
+}
 
-        printf("Polynôme guauche : ");
-        fmpz_poly_print_pretty(pol_left, "x");
-        printf("\n");
+/*
+  compute pol(x*2^exp)
+*/
+void compose_mult_2exp(fmpz_poly_t result, fmpz_poly_t pol, slong exp)
+{
+  fmpz_t coeff;
+  fmpz_init(coeff);
 
-        printf("Polynôme ver droite : ");
-        fmpz_poly_print_pretty(pol_right, "x");
-        printf("\n");
-        printf("\n");
+  slong degree = fmpz_poly_degree(pol);
 
-        isolation(pol_left, 2 * c, k + 1, solutions, nb_sol);
-        isolation(pol_right, 2 * c + 1, k + 1, solutions, nb_sol);
-    }
+  fmpz_poly_init2(result, degree+1);
+
+  fmpz_poly_get_coeff_fmpz(coeff, pol, 0);
+  fmpz_poly_set_coeff_fmpz(result,0,coeff);
+
+  for (int i = 1; i < fmpz_poly_degree(pol) + 1; i++)
+  {
+    fmpz_poly_get_coeff_fmpz(coeff, pol, i);
+    fmpz_mul_2exp(coeff, coeff, exp * (i));
+    fmpz_poly_set_coeff_fmpz(result, i, coeff);
+  }
+
+  fmpz_clear(coeff); 
+}
+
+void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol)
+{
+  // on fait fait le changement de variable pour avoir les racines sur [0,1]
+  fmpz_t root_upper_bound;
+  fmpz_init(root_upper_bound);
+
+  fmpz_poly_t compressed_pol;
+  fmpz_poly_init(compressed_pol);
+
+  local_max_bound_implementation(root_upper_bound, pol);
+
+  slong upper_power_of_two = fmpz_bits(root_upper_bound);
+
+  compose_mult_2exp(compressed_pol, pol, upper_power_of_two);
+
+  slong max_nb_roots = descartes_rule(pol);
+
+  *solutions = malloc(max_nb_roots * sizeof(solution));
+
+  fmpz_t zero;
+  fmpz_init_set_ui(zero, 0);
+
+  *nb_sol=0;
+
+  isolation_recursive(compressed_pol, zero, 0, *solutions, nb_sol);
 }
