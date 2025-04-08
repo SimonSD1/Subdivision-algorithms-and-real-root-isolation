@@ -2,7 +2,6 @@
 #include <flint/fmpz.h>
 #include <flint/fmpz_poly.h>
 
-
 fmpz_t FMPZ_ONE;
 
 void div_by_x(fmpz_poly_t pol)
@@ -44,7 +43,7 @@ int fmpz_poly_is_half_root(fmpz_poly_t pol)
 // on calcul pol(1/(x+1))
 void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol)
 {
-  fmpz_poly_init(result);
+  // fmpz_poly_init(result);
 
   // taylor shift (result(x)=pol(x+1))
   // on renverse
@@ -53,6 +52,7 @@ void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol)
   int degre = fmpz_poly_degree(pol);
 
   // reverse et shift
+
   fmpz_poly_reverse(result, pol, degre + 1);
   fmpz_poly_taylor_shift_divconquer(result, result, FMPZ_ONE);
 }
@@ -115,6 +115,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
 
   if (fmpz_is_zero(eval))
   {
+    printf("div par x\n");
     // if 0 is solution we can divide by x
     div_by_x(pol);
     // add the solution to the list
@@ -137,6 +138,9 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
   else if (sign_changes == 1)
   {
     // exactly one solution in this interval
+    printf("ajoute interval : c=");
+    fmpz_print(c);
+    printf(" k=%ld\n", k);
     fmpz_set(solutions[*nb_sol].c, c);
     solutions[*nb_sol].k = k;
     solutions[*nb_sol].is_exact = 0;
@@ -172,27 +176,28 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
 */
 void compose_mult_2exp(fmpz_poly_t result, fmpz_poly_t pol, slong exp)
 {
+
   fmpz_t coeff;
   fmpz_init(coeff);
 
   slong degree = fmpz_poly_degree(pol);
 
-  fmpz_poly_init2(result, degree+1);
+  fmpz_poly_init2(result, degree + 1);
 
   fmpz_poly_get_coeff_fmpz(coeff, pol, 0);
-  fmpz_poly_set_coeff_fmpz(result,0,coeff);
+  fmpz_poly_set_coeff_fmpz(result, 0, coeff);
 
-  for (int i = 1; i < fmpz_poly_degree(pol) + 1; i++)
+  for (int i = 1; i < degree + 1; i++)
   {
     fmpz_poly_get_coeff_fmpz(coeff, pol, i);
     fmpz_mul_2exp(coeff, coeff, exp * (i));
     fmpz_poly_set_coeff_fmpz(result, i, coeff);
   }
 
-  fmpz_clear(coeff); 
+  fmpz_clear(coeff);
 }
 
-void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol)
+void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *upper_power_of_two)
 {
   // on fait fait le changement de variable pour avoir les racines sur [0,1]
   fmpz_t root_upper_bound;
@@ -203,18 +208,21 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol)
 
   local_max_bound_implementation(root_upper_bound, pol);
 
-  slong upper_power_of_two = fmpz_bits(root_upper_bound);
+  *upper_power_of_two = fmpz_bits(root_upper_bound);
 
-  compose_mult_2exp(compressed_pol, pol, upper_power_of_two);
+  printf("\nupper power of two = %ld\n", *upper_power_of_two);
 
-  slong max_nb_roots = descartes_rule(pol);
+  compose_mult_2exp(compressed_pol, pol, *upper_power_of_two);
+
+  slong max_nb_roots;
+  max_nb_roots = descartes_rule(pol);
 
   *solutions = malloc(max_nb_roots * sizeof(solution));
 
   fmpz_t zero;
   fmpz_init_set_ui(zero, 0);
 
-  *nb_sol=0;
+  *nb_sol = 0;
 
   isolation_recursive(compressed_pol, zero, 0, *solutions, nb_sol);
 }
