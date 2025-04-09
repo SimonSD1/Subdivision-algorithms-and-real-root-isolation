@@ -118,7 +118,7 @@ void benchmark_DivConq_Implem_Table(slong maxLen, int fixedVariable, FILE *fileR
     free(tabTps);
 }
 
-int main(int argc, char *argv[])
+int main(/*int argc, char *argv[]*/)
 {
     slong maxLen = 101;
     fmpz_t shift;
