@@ -3,6 +3,7 @@ Subject.pdf
 src/EfficiencyTests/Results/
 src/bin/
 .venv/
+.ipynb_checkpoints
 ## pour le latex
 *.aux
 *.log

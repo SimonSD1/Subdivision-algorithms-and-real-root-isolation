@@ -103,7 +103,7 @@ void split_right(fmpz_poly_t result, const fmpz_poly_t pol)
   fmpz_clear(coeff);
 }
 
-void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol)
+void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp)
 {
   fmpz_t eval;
   fmpz_init(eval);
@@ -121,6 +121,16 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     // add the solution to the list
     fmpz_set(solutions[*nb_sol].c, c);
     solutions[*nb_sol].k = k;
+    solutions[*nb_sol].is_exact = 1;
+    (*nb_sol)++;
+  }
+
+  // on peut diviser par (x- 1/2)
+  if(fmpz_poly_is_half_root(pol)){
+    fmpz_set(temp,c);
+    fmpz_add_si(temp,temp,1);
+    fmpz_set(solutions[*nb_sol].c,temp);
+    solutions[*nb_sol].k = k+1;
     solutions[*nb_sol].is_exact = 1;
     (*nb_sol)++;
   }
@@ -160,11 +170,11 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     fmpz_t c_transformed;
     fmpz_mul_2exp(c_transformed, c, 1);
 
-    isolation_recursive(pol_left, c_transformed, k + 1, solutions, nb_sol);
+    isolation_recursive(pol_left, c_transformed, k + 1, solutions, nb_sol,temp);
 
     fmpz_add_ui(c_transformed, c_transformed, 1);
 
-    isolation_recursive(pol_right, c_transformed, k + 1, solutions, nb_sol);
+    isolation_recursive(pol_right, c_transformed, k + 1, solutions, nb_sol,temp);
   }
 
   fmpz_clear(eval);
@@ -224,5 +234,8 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *uppe
 
   *nb_sol = 0;
 
-  isolation_recursive(compressed_pol, zero, 0, *solutions, nb_sol);
+  fmpz_t temp;
+  fmpz_init(temp);
+
+  isolation_recursive(compressed_pol, zero, 0, *solutions, nb_sol,temp);
 }

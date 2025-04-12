@@ -22,7 +22,7 @@ typedef struct solution
 
 void div_by_x(fmpz_poly_t pol);
 
-void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol);
+void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp);
 
 void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol,fmpz_t root_upper_bound);
 
