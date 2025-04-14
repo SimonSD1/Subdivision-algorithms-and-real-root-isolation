@@ -24,19 +24,20 @@ int main()
     fmpz_poly_init(result);
 
     readPolyDATA(poly, 0, 80);
-    load_precomputed_polynomials(15);
+    load_precomputed_polynomials(5001);
+
 
 
     fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
 
     //poly_shift_plus_one(result, poly, shift);
-    if(fmpz_poly_equal(result, TrueResult))
+    /*if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of divide and conquer is valid :)\n");
     else
-        printf("Implem of divide and conquer is incorrect :(\n");
+        printf("Implem of divide and conquer is incorrect :(\n");*/
 
     
-    //poly_shift_plus_one_Precomputed(result, poly);
+    poly_shift_plus_one_Precomputed(result, poly);
     if(fmpz_poly_equal(result, TrueResult))
         printf("Implem of DivConq with precomputation table is valid :)\n");
     else

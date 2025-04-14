@@ -30,7 +30,7 @@ int main()
     
     load_precomputed_polynomials(15);
 
-    for (int i =5; i<=100; i+=10) {
+    /*for (int i =5; i<=100; i+=10) {
         readPolyDATA(poly, 0, i);
 
         slong max_bit_before = fmpz_poly_max_bits(poly);
@@ -41,10 +41,15 @@ int main()
         slong bit_diff = labs(max_bit_after) - labs(max_bit_before);// labs => absolute value for long int
         printf("length (degree+1) = %ld\n", poly->length);
         printf("bit diff = %ld\n\n", bit_diff);
-    }
+    }*/
     
-    /*readPolyDATA(poly, 0, 100);
-    truncate_coefficients(trunc_poly, poly, poly->length);
+    readPolyDATA(poly, 0, 51);
+    printf("degree = %ld\n", poly->length -1);
+    fmpz_t max_bit;
+    fmpz_init(max_bit);
+    //fmpz_abs(max_bit, (fmpz_t)fmpz_poly_max_bits(poly));
+    
+    truncate_coefficients(trunc_poly, poly, (slong)max_bit - 1);
 
     clock_t begin = clock();
     fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
@@ -75,7 +80,7 @@ int main()
     if (same_signs(result, TrueResult))
         printf("yaayy, polys have same signs after taylor shift\n"); 
     else
-        printf("polys don't have same signs after taylor shift :(\n");*/
+        printf("polys don't have same signs after taylor shift :(\n");
 
 
     fmpz_poly_clear(TrueResult);
@@ -83,6 +88,7 @@ int main()
     fmpz_poly_clear(trunc_poly);
     fmpz_poly_clear(result);
     fmpz_clear(shift);
+    fmpz_clear(max_bit);
     free_global_precomputed();
     return 0;
 }

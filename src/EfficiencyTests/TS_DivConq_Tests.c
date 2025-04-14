@@ -66,7 +66,7 @@ void benchmark_DivConq_Flint(fmpz_t shift, slong maxLen, int fixedVariable, FILE
     free(tabTps);
 }
 
-void benchmark_DivConq_Implem(slong maxLen, int fixedVariable, FILE *fileResults)
+/*void benchmark_DivConq_Implem(slong maxLen, int fixedVariable, FILE *fileResults)
 {
     printf("no table//////////////\n");
     fmpz_poly_t poly, result;
@@ -91,7 +91,7 @@ void benchmark_DivConq_Implem(slong maxLen, int fixedVariable, FILE *fileResults
     fmpz_poly_clear(result);
     fmpz_poly_clear(poly);
     free(tabTps);
-}
+}*/
 
 void benchmark_DivConq_Implem_Table(slong maxLen, int fixedVariable, FILE *fileResults)
 {
@@ -118,13 +118,17 @@ void benchmark_DivConq_Implem_Table(slong maxLen, int fixedVariable, FILE *fileR
     free(tabTps);
 }
 
+
+
+
+
 int main(/*int argc, char *argv[]*/)
 {
     slong maxLen = 101;
     fmpz_t shift;
     fmpz_init_set_si(shift, 1);
 
-    load_precomputed_polynomials(15);
+    load_precomputed_polynomials(5001);
 
     mkdir("src/EfficiencyTests/Results/TS_DivConq", 0777);
 
@@ -133,7 +137,7 @@ int main(/*int argc, char *argv[]*/)
 
     // note : on effectue les tests qu'une fois par taille, on ne fait pas de moyenne sur plusieurs tests pour une même taille
     FILE *fileResults;
-    fileResults = fopen("src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt", "w");
+    /*fileResults = fopen("src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt", "w");
     if (fileResults == NULL)
     {
         printf("The file is not opened. The program will "
@@ -141,15 +145,15 @@ int main(/*int argc, char *argv[]*/)
         exit(0);
     }
 
-    /*fprintf(fileResults, "DivConq Taylor Shift time efficiencies (coeffSize = 1500)\n"); // Title of the plot
+    fprintf(fileResults, "DivConq Taylor Shift time efficiencies (coeffSize = 1500)\n"); // Title of the plot
     fprintf(fileResults, "Flint Single-Threaded\n");                                     // labels of the plot
     benchmark_taylor_shiftMultiThread(shift, maxLen, 0, fileResults, 1);                 // datas
     fprintf(fileResults, "Flint Multi-Threaded (6 threads)\n");
     benchmark_taylor_shiftMultiThread(shift, maxLen, 0, fileResults, 6);
     fclose(fileResults);
-    */
 
-   /*
+
+
     fileResults = fopen("src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize_Threading.txt", "w");
     if (fileResults == NULL)
     {
@@ -174,14 +178,14 @@ int main(/*int argc, char *argv[]*/)
     }
     fprintf(fileResults, "DivConq Taylor Shift time efficiencies (coeffSize = 10000)\n"); // Title of the plot
     fprintf(fileResults, "Flint\n");
-    //benchmark_DivConq_Flint(shift, maxLen, 0, fileResults);
-    fprintf(fileResults, "Implem without table\n");
-    benchmark_DivConq_Implem(maxLen, 0, fileResults);
+    benchmark_DivConq_Flint(shift, maxLen, 0, fileResults);
+    //fprintf(fileResults, "Implem without table\n");
+    //benchmark_DivConq_Implem(maxLen, 0, fileResults);
     fprintf(fileResults, "Implem with table\n");
     benchmark_DivConq_Implem_Table(maxLen, 0, fileResults);
     fclose(fileResults);
 
-    /*
+    
     fileResults = fopen("src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize.txt", "w");
     if (fileResults == NULL)
     {
@@ -192,15 +196,15 @@ int main(/*int argc, char *argv[]*/)
     fprintf(fileResults, "DivConq Taylor Shift time efficiencies (degree = 1500)\n"); // Title of the plot
     fprintf(fileResults, "Flint\n");
     benchmark_DivConq_Flint(shift, maxLen, 1, fileResults);
-    fprintf(fileResults, "Implem without table\n");
-    benchmark_DivConq_Implem(maxLen, 1, fileResults);
+    //fprintf(fileResults, "Implem without table\n");
+    //benchmark_DivConq_Implem(maxLen, 1, fileResults);
     fprintf(fileResults, "Implem with table\n");
     benchmark_DivConq_Implem_Table(maxLen, 1, fileResults);
     fclose(fileResults);
-    */
+    
 
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt 'time' 0");
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize_Threading.txt 'time' 1");
+    //system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree_Threading.txt 'time' 0");
+    //system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize_Threading.txt 'time' 1");
     system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingDegree.txt 'time' 0");
     system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TS_DivConq/TS_DivConq_ChangingCoeffSize.txt 'time' 1");
 

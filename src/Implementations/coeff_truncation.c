@@ -52,8 +52,8 @@ void fmpz_trunc(fmpz_t rop, const fmpz_t op, slong keep_bits)
     slong drop_bits = total_bits - keep_bits;
 
     // Effectuer une troncature en supprimant les bits de poids faible
-    fmpz_fdiv_q_2exp(rop, op, drop_bits);  // shift right
-    fmpz_mul_2exp(rop, rop, drop_bits);    // shift back left
+    //fmpz_fdiv_q_2exp(rop, op, drop_bits);  // shift right
+    fmpz_mul_2exp(rop, op, drop_bits);    // shift back left
 }
 
 void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly, slong precision_bits) {

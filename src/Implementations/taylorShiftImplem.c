@@ -29,25 +29,34 @@ void load_precomputed_polynomials(slong max_m) {
     global_precomputed_len = flint_malloc(max_m * sizeof(slong));
     
     for (slong i = 0; i < max_m; i++) {
-        fmpz_poly_t tmp;
-        fmpz_poly_init(tmp);
+        fmpz *tmp = _fmpz_vec_init(i + 1);
         
-        char pathFile[80];
-        sprintf(pathFile, "DATA/Precomputation_DivConq/precomputation%d.txt", (int)i);
-        FILE *file = fopen(pathFile, "r");
-        if (!file || !fmpz_poly_fread(file, tmp)) {
-            printf("Failed to load precomputation%d.txt\n", (int)i);
-            exit(EXIT_FAILURE);
+        /* Now we generate (x+c)^len1 using binomial expansion. It's redundant
+        to do this in all branches of the tree, but since it's just O(d),
+        it's going to be cheap compared to the actual multiplications
+        anyway. */
+        fmpz_one(tmp);
+        for (slong k = 1; k <= i; k++)
+        {
+            if (k > i - k)
+            {
+                fmpz_set(tmp + k, tmp + i - k);
+            }
+            else
+            {
+            fmpz_mul_ui(tmp + k, tmp + k - 1, i + 1 - k);
+            fmpz_divexact_ui(tmp + k, tmp + k, k);
+            }
         }
-        fclose(file);
         
         // Store coefficients as raw vector
-        global_precomputed_len[i] = tmp->length;
-        global_precomputed[i] = _fmpz_vec_init(tmp->length);
-        _fmpz_vec_set(global_precomputed[i], tmp->coeffs, tmp->length);
+        global_precomputed_len[i] = i+1;
+        global_precomputed[i] = _fmpz_vec_init(global_precomputed_len[i]);
+        _fmpz_vec_set(global_precomputed[i], tmp, global_precomputed_len[i]);
         
-        fmpz_poly_clear(tmp);
+        _fmpz_vec_clear(tmp, i + 1);
     }
+
 }
 
 void free_global_precomputed() {
@@ -91,19 +100,7 @@ void divide_conquer_recursive(fmpz * poly, slong len) {
         return;
     }
 
-    fmpz_t len_fmpz;
-    fmpz_init_set_si(len_fmpz,len);
-    slong m = fmpz_clog_ui(len_fmpz,2);
-    int precomp;
-    //pour éviter déséquilibre
-    if (1 << (m - 2) > (len - (1 << (m - 1)))) {
-        len1 = 1 << (m - 2);
-        precomp = 2;
-    }
-    else {
-        len1 = 1 << (m - 1);
-        precomp = 1;
-    }
+    len1 = len/2;
     len2 = len - len1;
 
     divide_conquer_recursive(poly, len1);
@@ -113,8 +110,7 @@ void divide_conquer_recursive(fmpz * poly, slong len) {
     tmp = _fmpz_vec_init(len1 + 1);
     tmp2 = _fmpz_vec_init(len);
 
-    slong idx = m - precomp;
-    _fmpz_vec_set(tmp, global_precomputed[idx], global_precomputed_len[idx]);
+    _fmpz_vec_set(tmp, global_precomputed[len1], global_precomputed_len[len1]);
 
 
     _fmpz_poly_mul(tmp2, tmp, len1 + 1, poly + len1, len2);
@@ -131,93 +127,6 @@ void poly_shift_plus_one_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly)
         fmpz_poly_set(result, poly);
 
     divide_conquer_recursive(result->coeffs, result->length);
-}
-
-
-void divide_conquer_recursive2(fmpz * poly, slong len) {
-    fmpz *tmp, *tmp2;
-    slong len1, len2;
-    slong bits, cutoff;
-    fmpz_t shift;
-
-    if (len < 50) {
-        fmpz_init_set_si(shift, 1);
-        _fmpz_poly_taylor_shift_horner(poly, shift, len);
-        fmpz_clear(shift);
-        return;
-    }
-
-    bits = _fmpz_vec_max_bits(poly, len);
-    bits = FLINT_ABS(bits);
-    cutoff = 100 + 10 * n_sqrt(FLINT_MAX(bits - FLINT_BITS, 0));
-
-    cutoff = FLINT_MIN(cutoff, 1000);
-    if (len < cutoff) {
-        fmpz_init_set_si(shift, 1);
-        _fmpz_poly_taylor_shift_horner(poly, shift, len);
-        fmpz_clear(shift);
-        return;
-    }
-
-    fmpz_t len_fmpz;
-    fmpz_init_set_si(len_fmpz,len);
-    slong m = fmpz_clog_ui(len_fmpz,2);
-    //pour éviter déséquilibre
-    if (1 << (m - 2) > (len - (1 << (m - 1)))) {
-        len1 = 1 << (m - 2);
-    }
-    else {
-        len1 = 1 << (m - 1);
-    }
-    len2 = len - len1;
-
-    divide_conquer_recursive2(poly, len1);
-    divide_conquer_recursive2(poly + len1, len2);
-
-
-    tmp = _fmpz_vec_init(len1 + 1);
-    tmp2 = _fmpz_vec_init(len);
-
-    
-    /* Now we generate (x+c)^len1 using binomial expansion. It's redundant
-    to do this in all branches of the tree, but since it's just O(d),
-    it's going to be cheap compared to the actual multiplications
-    anyway. */
-    clock_t begin = clock();
-    fmpz_one(tmp);
-    for (slong k = 1; k <= len1; k++)
-    {
-        if (k > len1 - k)
-        {
-            fmpz_set(tmp + k, tmp + len1 - k);
-        }
-        else
-        {
-           fmpz_mul_ui(tmp + k, tmp + k - 1, len1 + 1 - k);
-           fmpz_divexact_ui(tmp + k, tmp + k, k);
-        }
-    }
-    clock_t end = clock();
-
-    printf("temps pris pour (x+c)^len1 = %lf\n",(double)(end - begin));
-
-
-    _fmpz_poly_mul(tmp2, tmp, len1 + 1, poly + len1, len2);
-
-    _fmpz_vec_add(poly, poly, tmp2, len1);
-    _fmpz_vec_set(poly + len1, tmp2 + len1, len2);
-
-    _fmpz_vec_clear(tmp, len1 + 1);
-    _fmpz_vec_clear(tmp2, len);
-}
-
-void poly_shift_plus_one_Non_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly) {
-    if (poly != result)
-        fmpz_poly_set(result, poly);
-
-    printf("bonjoru");
-
-    divide_conquer_recursive2(result->coeffs, result->length);
 }
 
 
