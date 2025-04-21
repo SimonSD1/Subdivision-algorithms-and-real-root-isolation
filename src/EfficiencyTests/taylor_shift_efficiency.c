@@ -86,14 +86,14 @@ void benchmark_DecoupePrecompute(fmpz_t shift, slong maxLen, int fixedVariable, 
         slong threshold = 256 * 2; // Example threshold
 
 
-        clock_gettime(CLOCK_MONOTONIC, &start_compute);
+        //clock_gettime(CLOCK_MONOTONIC, &start_compute);
         fmpz_poly_t *power_array;
         slong l = compute_power_array(&power_array, poly, threshold);
-        clock_gettime(CLOCK_MONOTONIC, &finish_compute);
+        //clock_gettime(CLOCK_MONOTONIC, &finish_compute);
 
 
-        double time_compute = (finish_compute.tv_sec - start_compute.tv_sec) + (finish_compute.tv_nsec - start_compute.tv_nsec) / 1000000000.0;
-        printf("Time to compute power array (length %ld): %lf seconds\n", poly->length, time_compute);
+        //double time_compute = (finish_compute.tv_sec - start_compute.tv_sec) + (finish_compute.tv_nsec - start_compute.tv_nsec) / 1000000000.0;
+        //printf("Time to compute power array (length %ld): %lf seconds\n", poly->length, time_compute);
 
         clock_gettime(CLOCK_MONOTONIC, &start_shift);
         iterative_taylor_shift_precompute(result, poly, threshold, power_array);

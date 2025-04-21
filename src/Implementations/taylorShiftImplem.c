@@ -212,7 +212,7 @@ slong compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong thr
     int l = log_two(len / block_len);
 
     if(l==0){
-        return;
+        return 0;
     }
 
     (*power_array) = malloc(l * sizeof(fmpz_poly_t));
