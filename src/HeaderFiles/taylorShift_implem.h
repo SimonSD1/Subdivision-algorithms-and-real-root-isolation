@@ -19,5 +19,12 @@ void free_global_precomputed();
 void poly_shift_plus_one_Precomputed(fmpz_poly_t g, const fmpz_poly_t poly);
 void poly_shift_plus_one_Non_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly);
 void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a);
+void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, slong threshold, fmpz_poly_t* power_array);
+slong compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong threshold);
+void fmpz_compute_binom_poly(fmpz_poly_t binom_poly, slong n);
+void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, slong threshold, fmpz_poly_t* power_array);
+
+
+
 
 #endif
