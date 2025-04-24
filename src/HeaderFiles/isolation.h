@@ -18,7 +18,6 @@ typedef struct solution
   fmpz_t c;
   slong k;
   int is_exact;
-  int sign; //1 if positive, 0 if negative
 } solution;
 
 void div_by_x(fmpz_poly_t pol);

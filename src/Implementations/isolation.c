@@ -288,16 +288,10 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_n
   *nb_sol = 0;
 
   isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg);
-  for(int i=0; i<*nb_sol; i++) {
-    (*solutions)[i].sign = 0;
-  }
   *nb_neg_sol = *nb_sol;
 
   isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos);
-  for(int i=*nb_neg_sol; i<*nb_sol; i++) {
-    (*solutions)[i].sign = 1;
-  }
-
+  
 
   fmpz_poly_clear(pol_neg);
 }
