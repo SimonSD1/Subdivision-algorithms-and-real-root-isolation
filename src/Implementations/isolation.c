@@ -28,17 +28,11 @@ int fmpz_poly_is_half_root(fmpz_poly_t pol)
     fmpz_add(numerator, numerator, temp);
   }
 
+  int res = fmpz_is_zero(numerator);
   fmpz_clear(numerator);
   fmpz_clear(temp);
 
-  if (fmpz_is_zero(numerator))
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
+  return res;
 }
 
 // on calcul pol(1/(x+1))
@@ -57,6 +51,9 @@ void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t* power_a
   fmpz_poly_reverse(result, pol, degre + 1);
   iterative_taylor_shift_precompute(result, result, threshold,power_array);
 }
+
+
+
 
 // pol(x/2) * 2^d to avoid denominator
 void split_left(fmpz_poly_t result, const fmpz_poly_t pol)
@@ -104,6 +101,9 @@ void split_right(fmpz_poly_t result, const fmpz_poly_t pol)
   fmpz_clear(coeff);
 }
 
+
+
+
 void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp,fmpz_poly_t *power_array, slong threshold )
 {
   fmpz_t eval;
@@ -115,7 +115,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
   evaluate_0(eval, pol);
   
 
-  printf("b");
+  int exact_root = 0;
 
   if (fmpz_is_zero(eval))
   {
@@ -127,6 +127,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     solutions[*nb_sol].k = k;
     solutions[*nb_sol].is_exact = 1;
     (*nb_sol)++;
+    exact_root = 1;
   }
 
   // on peut diviser par (x- 1/2)
@@ -138,6 +139,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     solutions[*nb_sol].k = k + 1;
     solutions[*nb_sol].is_exact = 1;
     (*nb_sol)++;
+    exact_root = 1;
   }
 
   var_change_to_inf(var_changed, pol, power_array, threshold);
@@ -152,14 +154,17 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
 
   else if (sign_changes == 1)
   {
-    // exactly one solution in this interval
-    printf("ajoute interval : c=");
-    fmpz_print(c);
-    printf(" k=%ld\n", k);
-    fmpz_set(solutions[*nb_sol].c, c);
-    solutions[*nb_sol].k = k;
-    solutions[*nb_sol].is_exact = 0;
-    (*nb_sol)++;
+    if(!exact_root)
+    {
+      // exactly one solution in this interval
+      printf("ajoute interval : c=");
+      fmpz_print(c);
+      printf(" k=%ld\n", k);
+      fmpz_set(solutions[*nb_sol].c, c);
+      solutions[*nb_sol].k = k;
+      solutions[*nb_sol].is_exact = 0;
+      (*nb_sol)++;
+    }
     return;
   }
 
@@ -185,6 +190,8 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
   fmpz_clear(eval);
   fmpz_poly_clear(var_changed);
 }
+
+
 
 /*
   compute pol(x*2^exp)
@@ -212,7 +219,10 @@ void compose_mult_2exp(fmpz_poly_t result, fmpz_poly_t pol, slong exp)
   fmpz_clear(coeff);
 }
 
-void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *upper_power_of_two)
+
+
+
+void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *upper_power_of_two)
 {
   // on fait fait le changement de variable pour avoir les racines sur [0,1]
   fmpz_t root_upper_bound;
@@ -235,18 +245,59 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *uppe
 
   compose_mult_2exp(compressed_pol, pol, *upper_power_of_two);
 
-  slong max_nb_roots;
-  max_nb_roots = descartes_rule(pol);
-
-  *solutions = malloc(max_nb_roots * sizeof(solution));
-
   fmpz_t zero;
   fmpz_init_set_ui(zero, 0);
-
-  *nb_sol = 0;
 
   fmpz_t temp;
   fmpz_init(temp);
 
-  isolation_recursive(compressed_pol, zero, 0, *solutions, nb_sol, temp, power_array, threshold);
+  
+  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, threshold);
+
+
+
+  fmpz_poly_clear(compressed_pol);
+  fmpz_clear(temp);
+  fmpz_clear(root_upper_bound);
+}
+
+
+
+
+void poly_moins_x(fmpz_poly_t res, const fmpz_poly_t poly) {
+  fmpz_poly_set(res, poly); // Copie le polynôme
+  for (slong i = 1; i <= fmpz_poly_degree(res); i += 2) {
+      fmpz_neg(fmpz_poly_get_coeff_ptr(res, i), fmpz_poly_get_coeff_ptr(res, i));
+  }
+}
+
+
+
+void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_neg_sol, slong *upper_power_of_two_pos, slong *upper_power_of_two_neg)
+{
+  slong max_nb_roots;
+  max_nb_roots = descartes_rule(pol);
+
+  fmpz_poly_t pol_neg;
+  fmpz_poly_init(pol_neg);
+  poly_moins_x(pol_neg, pol);
+
+  max_nb_roots += descartes_rule(pol_neg);
+
+  *solutions = malloc(max_nb_roots * sizeof(solution));
+  *nb_sol = 0;
+
+  isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg);
+  for(int i=0; i<*nb_sol; i++) {
+    (*solutions)[i].sign = 0;
+  }
+  *nb_neg_sol = *nb_sol;
+
+  isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos);
+  for(int i=*nb_neg_sol; i<*nb_sol; i++) {
+    (*solutions)[i].sign = 1;
+  }
+
+
+  fmpz_poly_clear(pol_neg);
 }
