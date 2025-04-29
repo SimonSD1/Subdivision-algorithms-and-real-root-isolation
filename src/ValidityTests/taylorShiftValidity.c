@@ -24,24 +24,26 @@ int main()
     fmpz_poly_init(result);
 
     readPolyDATA(poly, 0, 80);
-    load_precomputed_polynomials(5001);
-
-
 
     fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
 
-    //poly_shift_plus_one(result, poly, shift);
-    /*if(fmpz_poly_equal(result, TrueResult))
-        printf("Implem of divide and conquer is valid :)\n");
-    else
-        printf("Implem of divide and conquer is incorrect :(\n");*/
 
-    
-    poly_shift_plus_one_Precomputed(result, poly);
+    slong threshold = 512;  // Block size threshold
+    fmpz_poly_t* power_array = NULL;
+    slong levels = compute_power_array(&power_array, poly, threshold);
+    flint_printf("Precomputed %ld levels of binomial coefficients\n", levels);
+
+    iterative_taylor_shift_precompute(result, poly, threshold, power_array);
+
+    for (int i = 0; i < levels; i++)
+        fmpz_poly_clear(power_array[i]);
+    free(power_array);
+
+
     if(fmpz_poly_equal(result, TrueResult))
-        printf("Implem of DivConq with precomputation table is valid :)\n");
+        printf("Implem of iterative DivConq with precomputation table is valid :)\n");
     else
-        printf("Implem of DivConq with precomputation table is incorrect :(\n");
+        printf("Implem of iterative DivConq with precomputation table is incorrect :(\n");
 
     /*naiveShift(result, poly, shift);
     if(fmpz_poly_equal(result, TrueResult))
@@ -53,6 +55,5 @@ int main()
     fmpz_poly_clear(result);
     fmpz_poly_clear(poly);
     fmpz_clear(shift);
-    free_global_precomputed();
     return 0;
 }

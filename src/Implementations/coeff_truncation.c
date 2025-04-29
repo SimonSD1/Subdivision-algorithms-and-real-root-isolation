@@ -56,22 +56,28 @@ void fmpz_trunc(fmpz_t rop, const fmpz_t op, slong keep_bits)
     fmpz_mul_2exp(rop, op, drop_bits);    // shift back left
 }
 
-void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly, slong precision_bits) {
+void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly) {
     slong len = fmpz_poly_length(poly);
     fmpz_poly_set(result, poly);
     fmpz_t coeff;
     fmpz_init(coeff);
+    slong bit_coeff;
+    fmpz_t deg;
+    fmpz_init_set_si(deg, len-1);
+    slong truncate_bits = (slong) (fmpz_bits(deg) + 2); // maybe +2 for extra safety
+    //printf("truncating %ld bits\n", truncate_bits);
 
     for (slong i = 0; i < len; i++) {
         fmpz_poly_get_coeff_fmpz(coeff, result, i);
-        
-        // Tronquer les coefficients à la précision donnée
-        // La troncature ici consiste à éliminer les bits au-delà de la précision spécifiée
-        fmpz_trunc(coeff, coeff, precision_bits);  // Reduit à la précision spécifiée
+        bit_coeff = fmpz_bits(coeff);
+
+        //Tronquer les bits de poids fort : on garde (bit_coeff-cutoff) bits de poids faible
+        fmpz_tdiv_r_2exp(coeff, coeff, bit_coeff-truncate_bits);
         
         // Réassigner le coefficient tronqué dans le polynôme
         fmpz_poly_set_coeff_fmpz(result, i, coeff);
     }
     
     fmpz_clear(coeff);
+    fmpz_clear(deg);
 }

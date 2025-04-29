@@ -2,6 +2,7 @@
 #include <flint/fmpz.h>
 #include <flint/fmpz_poly.h>
 #include "../HeaderFiles/taylorShift_implem.h"
+#include "../HeaderFiles/coeff_truncation.h"
 
 fmpz_t FMPZ_ONE;
 
@@ -112,6 +113,9 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
   fmpz_poly_t var_changed;
   fmpz_poly_init(var_changed);
 
+  fmpz_poly_t truncated_poly;
+  fmpz_poly_init(truncated_poly);
+
   evaluate_0(eval, pol);
   
 
@@ -142,7 +146,9 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     exact_root = 1;
   }
 
-  var_change_to_inf(var_changed, pol, power_array, threshold);
+  //Truncate pol before changing variable
+  fmpz_poly_set(truncated_poly, pol);
+  var_change_to_inf(var_changed, truncated_poly, power_array, threshold);
 
   int sign_changes = descartes_rule(var_changed);
 
@@ -189,6 +195,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
 
   fmpz_clear(eval);
   fmpz_poly_clear(var_changed);
+  fmpz_poly_clear(truncated_poly);
 }
 
 

@@ -14,18 +14,18 @@
 #include <sys/time.h>
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/taylorShift_implem.h"
+#include "../HeaderFiles/coeff_truncation.h"
 
 
 void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
 {
-    fmpz_t shift;
-    fmpz_init_set_si(shift, 1);
-
-    fmpz_poly_t poly, result, TrueResult;
+    fmpz_poly_t poly, trunc_poly, result, TrueResult;
     fmpz_poly_init(poly);
     fmpz_poly_init(result);
-    double *tabTpsFlint = malloc(sizeof(double) * (maxLen));
-    double *tabTpsImplem = malloc(sizeof(double) * (maxLen));
+    fmpz_poly_init(TrueResult);
+    fmpz_poly_init(trunc_poly);
+    double *tabTps = malloc(sizeof(double) * (maxLen));
+    double *tabTpsTrunc = malloc(sizeof(double) * (maxLen));
     fmpz_poly_t* power_array;
     slong threshold = 512;
 
@@ -34,24 +34,26 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
         flint_cleanup();
         power_array = NULL;
         readPolyDATA(poly, fixedVariable, i);
+        truncate_coefficients(trunc_poly, poly);
 
         slong levels = compute_power_array(&power_array, poly, threshold);
-        flint_printf("Precomputed %ld levels of binomial coefficients\n", levels);
 
         
-        flint_set_num_threads(1);
         clock_t begin = clock();
-        fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
+        iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
         clock_t end = clock();
-        tabTpsFlint[i] = (double)(end - begin);
+        tabTps[i] = (double)(end - begin);
 
         begin = clock();
         iterative_taylor_shift_precompute(result, poly, threshold, power_array);
         end = clock();
-        tabTpsImplem[i] = (double)(end - begin); // / CLOCKS_PER_SEC;
+        tabTpsTrunc[i] = (double)(end - begin); // / CLOCKS_PER_SEC;
 
-        if(!fmpz_poly_equal(TrueResult, result))
-            printf("Different result of Taylor Shift with implem :(\n");
+
+        if (!same_signs(result, TrueResult))
+            printf("polys don't have same signs after taylor shift :(\n");
+            
+
 
         //cleanup the precomputation
         for (int i = 0; i < levels; i++)
@@ -62,23 +64,23 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
 
     // Title of the plot
     if(!fixedVariable)
-        fprintf(fileResults, "DivConq Taylor Shift time efficiencies (coeffSize = 10000)\n");
+        fprintf(fileResults, "Truncation before Taylor Shift time efficiencies (coeffSize = 10000)\n");
     else
-        fprintf(fileResults, "DivConq Taylor Shift time efficiencies (degree = 1500)\n");
+        fprintf(fileResults, "Truncation before Taylor Shift time efficiencies (degree = 1500)\n");
 
 
-    fprintf(fileResults, "Flint\n");
-    fprintTab(tabTpsFlint, maxLen, fileResults);
-    fprintf(fileResults, "Implem iterative with table\n");
-    fprintTab(tabTpsImplem, maxLen, fileResults);
+    fprintf(fileResults, "No truncation\n");
+    fprintTab(tabTps, maxLen, fileResults);
+    fprintf(fileResults, "With truncation\n");
+    fprintTab(tabTpsTrunc, maxLen, fileResults);
 
 
-    fmpz_poly_clear(result);
     fmpz_poly_clear(TrueResult);
     fmpz_poly_clear(poly);
-    fmpz_clear(shift);
-    free(tabTpsFlint);
-    free(tabTpsImplem);
+    fmpz_poly_clear(trunc_poly);
+    fmpz_poly_clear(result);
+    free(tabTps);
+    free(tabTpsTrunc);
 }
 
 
@@ -91,10 +93,10 @@ int main(int argc, char *argv[])
 
     if(argc > 1 && strcmp(argv[1], "-r") == 0) {            
         slong maxLen = 101;
-        mkdir("src/EfficiencyTests/Results/TaylorShift", 0777);
+        mkdir("src/EfficiencyTests/Results/Truncation", 0777);
 
         FILE *fileResults;
-        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree.txt", "w");
+        fileResults = fopen("src/EfficiencyTests/Results/Truncation/Truncation_ChangingDegree.txt", "w");
         if (fileResults == NULL)
         {
             printf("The file is not opened. The program will "
@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
         fclose(fileResults);
 
 
-        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize.txt", "w");
+        fileResults = fopen("src/EfficiencyTests/Results/Truncation/Truncation_ChangingCoeffSize.txt", "w");
         if (fileResults == NULL)
         {
             printf("The file is not opened. The program will "
@@ -116,8 +118,8 @@ int main(int argc, char *argv[])
         fclose(fileResults);
     }
 
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree.txt 'time' 0");
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize.txt 'time' 1");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/Truncation/Truncation_ChangingDegree.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/Truncation/Truncation_ChangingCoeffSize.txt 'time' 1");
 
 
 
