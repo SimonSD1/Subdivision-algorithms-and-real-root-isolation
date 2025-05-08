@@ -40,18 +40,20 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
 
         
         clock_t begin = clock();
-        iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+        iterative_taylor_shift_precompute(result, trunc_poly, threshold, power_array);
         clock_t end = clock();
-        tabTps[i] = (double)(end - begin);
-
-        begin = clock();
-        iterative_taylor_shift_precompute(result, poly, threshold, power_array);
-        end = clock();
         tabTpsTrunc[i] = (double)(end - begin); // / CLOCKS_PER_SEC;
 
+        begin = clock();
+        iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+        end = clock();
+        tabTps[i] = (double)(end - begin);
 
-        if (!same_signs(result, TrueResult))
+
+        if (!same_signs(result, TrueResult)) {
             printf("polys don't have same signs after taylor shift :(\n");
+            printf("iteration %ld, fixedVariable %d\n", i, fixedVariable);
+        }
             
 
 

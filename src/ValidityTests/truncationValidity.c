@@ -18,6 +18,8 @@ int main()
     fmpz_poly_init(result);
     fmpz_poly_init(TrueResult);
     fmpz_poly_init(trunc_poly);
+    fmpz_t (coeff);
+    fmpz_init(coeff);
     
 
     /*for (int i =5; i<=100; i+=10) {
@@ -33,27 +35,24 @@ int main()
         printf("bit diff = %ld\n\n", bit_diff);
     }*/
     
-    readPolyDATA(poly, 0, 100);
-    
+    readPolyDATA(poly, 0, 60);
     truncate_coefficients(trunc_poly, poly);
 
     slong threshold = 256*2;
     fmpz_poly_t* power_array;
     slong levels = compute_power_array(&power_array, poly, threshold);
-
+    
     clock_t begin = clock();
-    iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+    iterative_taylor_shift_precompute(result, trunc_poly, threshold, power_array);
     clock_t end = clock();
     double tps = (double)(end - begin); // / CLOCKS_PER_SEC;
-    printf("Tps taylor shift without truncation : %f\n", tps);
-
-    begin = clock();
-    iterative_taylor_shift_precompute(result, poly, threshold, power_array);
-    end = clock();
-    tps = (double)(end - begin);
     printf("Tps taylor shift with truncation : %f\n", tps);
 
-    
+    begin = clock();
+    iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+    end = clock();
+    tps = (double)(end - begin);
+    printf("Tps taylor shift without truncation : %f\n", tps);
 
     slong max_bit_before = fmpz_poly_max_bits(poly);
     printf("max_bit_before trunc = %ld\n", max_bit_before);
@@ -78,5 +77,6 @@ int main()
     fmpz_poly_clear(poly);
     fmpz_poly_clear(trunc_poly);
     fmpz_poly_clear(result);
+    fmpz_clear(coeff);
     return 0;
 }

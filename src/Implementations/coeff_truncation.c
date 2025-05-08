@@ -64,7 +64,7 @@ void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly) {
     slong bit_coeff;
     fmpz_t deg;
     fmpz_init_set_si(deg, len-1);
-    slong truncate_bits = (slong) (fmpz_bits(deg) + 2); // maybe +2 for extra safety
+    slong truncate_bits = (slong) (fmpz_bits(deg));
     //printf("truncating %ld bits\n", truncate_bits);
 
     for (slong i = 0; i < len; i++) {

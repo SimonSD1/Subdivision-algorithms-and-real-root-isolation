@@ -1,6 +1,38 @@
 #include "../HeaderFiles/isolation.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "../HeaderFiles/functionsForTests.h"
+
+#define MAX_ROOTS 10000
+
+
+double* read_maple_roots(const char* filename, int* count) {
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        printf("Failed to open %s\n", filename);
+        exit(1);
+    }
+    double* roots = malloc(sizeof(double) * MAX_ROOTS);
+    *count = 0;
+    while (fscanf(f, "%lf", &roots[*count]) == 1) {
+        (*count)++;
+        if (*count >= MAX_ROOTS) break;
+    }
+    fclose(f);
+    return roots;
+}
+
+
+int run_maple_script() {
+    // Essaie sur Linux natif
+    int ret = system("\"/mnt/c/Program Files/Maple 2024/bin.X86_64_WINDOWS/cmaple.exe\"  src/ValidityTests/isolationValidityScript.mpl");
+    if (ret == 0) return 0;
+    return ret;
+}
+
+
+
 
 int main(void)
 {
@@ -12,6 +44,12 @@ int main(void)
     fmpz_poly_t pol;
     fmpz_poly_init(pol);
 
+    if (run_maple_script() != 0) {
+        printf("Erreur lors de l'exécution du script Maple.\n");
+        return 1;
+    }
+
+
     FILE* filePoly;
     char pathFile[50];
     sprintf(pathFile, "src/bin/test.out");
@@ -22,7 +60,7 @@ int main(void)
     fclose(filePoly);
     //fmpz_poly_set_str(pol, "4  -4 8 -5 1");
 
-    fmpz_poly_print_pretty(pol, "x");
+    //fmpz_poly_print_pretty(pol, "x");
 
     slong nb_sol, nb_neg_sol;
     solution *solutions = NULL;
@@ -35,10 +73,11 @@ int main(void)
     fmpz_init(temp);
 
     isolation(pol, &solutions, &nb_sol, &nb_neg_sol, &upper_power_of_two_pos, &upper_power_of_two_neg);
+    printf("Isolated solutions: %ld //////// ", nb_sol);
 
-    printf("Isolated solutions: %ld,\n", nb_sol);
-
-
+    int nb_maple_roots = 0;
+    double* maple_roots = read_maple_roots("src/bin/maple_roots.txt", &nb_maple_roots);
+    printf("Maple found %d roots\n", nb_maple_roots);
 
     for (int i=nb_neg_sol-1; i>=0; i--) //we print negative roots intervals first
     {
@@ -58,7 +97,12 @@ int main(void)
             fmpz_add(temp,solutions[i].c,FMPZ_ONE);
             fmpz_mul_2exp(temp,temp, upper_power_of_two_neg);
             double upper = (fmpz_get_d(temp)) / denom;
-            printf("Solution in interval: [ %lf , %lf ]\n", -upper, -lower);
+            printf("Solution in interval: [ %lf , %lf ]", -upper, -lower);
+            double root = maple_roots[nb_neg_sol-1 - i];
+            if (root >= -upper && root <= -lower)
+                printf(" -> Maple root %lf is inside this interval yayyy\n", root);
+            else
+                printf(" -> No Maple root found inside this interval :(\n");
         }
 
         fmpz_clear(solutions[i].c);
@@ -84,7 +128,12 @@ int main(void)
             fmpz_add(temp,solutions[i].c,FMPZ_ONE);
             fmpz_mul_2exp(temp,temp,upper_power_of_two_pos);
             double upper = (fmpz_get_d(temp)) / denom;
-            printf("Solution in interval: [ %lf , %lf ]\n", lower, upper);
+            printf("Solution in interval: [ %lf , %lf ]", lower, upper);
+            double root = maple_roots[i];
+            if (root >= lower && root <= upper)
+                printf(" -> Maple root %lf is inside this interval yayyy\n", root);
+            else
+                printf(" -> No Maple root found inside this interval :(\n");
         }
 
         fmpz_clear(solutions[i].c);
