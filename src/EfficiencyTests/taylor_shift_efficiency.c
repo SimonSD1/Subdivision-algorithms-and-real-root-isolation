@@ -15,6 +15,8 @@
 #include "../HeaderFiles/functionsForTests.h"
 #include "../HeaderFiles/taylorShift_implem.h"
 
+#define NB_RUNS 8
+
 
 void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
 {
@@ -24,8 +26,10 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     fmpz_poly_t poly, result, TrueResult;
     fmpz_poly_init(poly);
     fmpz_poly_init(result);
+    fmpz_poly_init(TrueResult);
     double *tabTpsFlint = malloc(sizeof(double) * (maxLen));
     double *tabTpsImplem = malloc(sizeof(double) * (maxLen));
+    struct timespec start, end;
     fmpz_poly_t* power_array;
     slong threshold = 512;
 
@@ -34,21 +38,43 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
         flint_cleanup();
         power_array = NULL;
         readPolyDATA(poly, fixedVariable, i);
-
+        
         slong levels = compute_power_array(&power_array, poly, threshold);
         flint_printf("Precomputed %ld levels of binomial coefficients\n", levels);
 
-        
-        flint_set_num_threads(1);
-        clock_t begin = clock();
-        fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
-        clock_t end = clock();
-        tabTpsFlint[i] = (double)(end - begin);
+        tabTpsImplem[i] = 0;
+        tabTpsFlint[i] = 0;
+        //On effectue une moyenne sur NB_RUNS mesures
+        for(int k=0; k<NB_RUNS; k++) {
+            //on inverse l'ordre une fois sur 2 car mesure biaisée selon l'ordre
+            if (k % 2 == 0) {
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                iterative_taylor_shift_precompute(result, poly, threshold, power_array);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                tabTpsImplem[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
 
-        begin = clock();
-        iterative_taylor_shift_precompute(result, poly, threshold, power_array);
-        end = clock();
-        tabTpsImplem[i] = (double)(end - begin); // / CLOCKS_PER_SEC;
+                flint_set_num_threads(1);
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                tabTpsFlint[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
+            }
+            else {
+                flint_set_num_threads(1);
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                fmpz_poly_taylor_shift_divconquer(TrueResult, poly, shift);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                tabTpsFlint[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
+
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                iterative_taylor_shift_precompute(result, poly, threshold, power_array);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                tabTpsImplem[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
+            }            
+        }
+        tabTpsImplem[i] /= NB_RUNS;
+        tabTpsFlint[i] /= NB_RUNS;
+        
 
         if(!fmpz_poly_equal(TrueResult, result))
             printf("Different result of Taylor Shift with implem :(\n");
