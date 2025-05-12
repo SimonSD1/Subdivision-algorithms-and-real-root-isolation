@@ -31,7 +31,6 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     double *tabTpsImplem = malloc(sizeof(double) * (maxLen));
     struct timespec start, end;
     fmpz_poly_t* power_array;
-    slong threshold = 512;
 
     for (slong i = 0; i < maxLen; i++)
     {
@@ -39,7 +38,8 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
         power_array = NULL;
         readPolyDATA(poly, fixedVariable, i);
         
-        slong levels = compute_power_array(&power_array, poly, threshold);
+        slong block_len, levels;
+        compute_power_array(&power_array, poly, &block_len, &levels);
         flint_printf("Precomputed %ld levels of binomial coefficients\n", levels);
 
         tabTpsImplem[i] = 0;
@@ -49,7 +49,7 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
             //on inverse l'ordre une fois sur 2 car mesure biaisée selon l'ordre
             if (k % 2 == 0) {
                 clock_gettime(CLOCK_MONOTONIC, &start);
-                iterative_taylor_shift_precompute(result, poly, threshold, power_array);
+                iterative_taylor_shift_precompute(result, poly, power_array, block_len, levels);
                 clock_gettime(CLOCK_MONOTONIC, &end);
                 tabTpsImplem[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
 
@@ -67,7 +67,7 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
                 tabTpsFlint[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
 
                 clock_gettime(CLOCK_MONOTONIC, &start);
-                iterative_taylor_shift_precompute(result, poly, threshold, power_array);
+                iterative_taylor_shift_precompute(result, poly, power_array, block_len, levels);
                 clock_gettime(CLOCK_MONOTONIC, &end);
                 tabTpsImplem[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
             }            
@@ -78,11 +78,10 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
 
         if(!fmpz_poly_equal(TrueResult, result))
             printf("Different result of Taylor Shift with implem :(\n");
+        else
+            printf("poly %ld valid taylor shift\n", i);
 
-        //cleanup the precomputation
-        for (int i = 0; i < levels; i++)
-            fmpz_poly_clear(power_array[i]);
-        free(power_array);
+        free_precompute_table(power_array, levels);
     }
 
 

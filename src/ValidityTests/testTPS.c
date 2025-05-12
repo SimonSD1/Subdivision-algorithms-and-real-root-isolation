@@ -19,19 +19,19 @@ int main()
     
     readPolyDATA(poly, 0, 60);
 
-    slong threshold = 256*2;
     fmpz_poly_t* power_array;
-    slong levels = compute_power_array(&power_array, poly, threshold);
+    slong block_len, levels;
+    compute_power_array(&power_array, poly, &block_len, &levels);
     
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+    iterative_taylor_shift_precompute(TrueResult, poly, power_array, block_len, levels);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double tps = (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
     printf("Tps 1 : %f\n", tps);
 
     clock_gettime(CLOCK_MONOTONIC, &start);
-    iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+    iterative_taylor_shift_precompute(TrueResult, poly, power_array, block_len, levels);
     clock_gettime(CLOCK_MONOTONIC, &end);
     tps = (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;
     printf("Tps 2 : %f\n", tps);

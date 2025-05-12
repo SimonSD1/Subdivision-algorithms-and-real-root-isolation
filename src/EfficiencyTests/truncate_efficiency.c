@@ -27,7 +27,6 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     double *tabTps = malloc(sizeof(double) * (maxLen));
     double *tabTpsTrunc = malloc(sizeof(double) * (maxLen));
     fmpz_poly_t* power_array;
-    slong threshold = 512;
 
     for (slong i = 0; i < maxLen; i++)
     {
@@ -36,16 +35,17 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
         readPolyDATA(poly, fixedVariable, i);
         truncate_coefficients(trunc_poly, poly);
 
-        slong levels = compute_power_array(&power_array, poly, threshold);
+        slong block_len, levels;
+        compute_power_array(&power_array, poly, &block_len, &levels);
 
         
         clock_t begin = clock();
-        iterative_taylor_shift_precompute(result, trunc_poly, threshold, power_array);
+        iterative_taylor_shift_precompute(result, trunc_poly, power_array, block_len, levels);
         clock_t end = clock();
         tabTpsTrunc[i] = (double)(end - begin); // / CLOCKS_PER_SEC;
 
         begin = clock();
-        iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+        iterative_taylor_shift_precompute(TrueResult, poly, power_array, block_len, levels);
         end = clock();
         tabTps[i] = (double)(end - begin);
 
@@ -54,13 +54,8 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
             printf("polys don't have same signs after taylor shift :(\n");
             printf("iteration %ld, fixedVariable %d\n", i, fixedVariable);
         }
-            
-
-
-        //cleanup the precomputation
-        for (int i = 0; i < levels; i++)
-            fmpz_poly_clear(power_array[i]);
-        free(power_array);
+        
+        free_precompute_table(power_array, levels);
     }
 
 

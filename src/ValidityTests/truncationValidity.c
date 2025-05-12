@@ -35,21 +35,21 @@ int main()
         printf("bit diff = %ld\n\n", bit_diff);
     }*/
     
-    readPolyDATA(poly, 0, 60);
+    readPolyDATA(poly, 1, 81);
     truncate_coefficients(trunc_poly, poly);
 
-    slong threshold = 256*2;
     fmpz_poly_t* power_array;
-    slong levels = compute_power_array(&power_array, poly, threshold);
+    slong block_len, levels;
+    compute_power_array(&power_array, poly, &block_len, &levels);
     
     clock_t begin = clock();
-    iterative_taylor_shift_precompute(result, trunc_poly, threshold, power_array);
+    iterative_taylor_shift_precompute(result, trunc_poly, power_array, block_len, levels);
     clock_t end = clock();
     double tps = (double)(end - begin); // / CLOCKS_PER_SEC;
     printf("Tps taylor shift with truncation : %f\n", tps);
 
     begin = clock();
-    iterative_taylor_shift_precompute(TrueResult, poly, threshold, power_array);
+    iterative_taylor_shift_precompute(TrueResult, poly, power_array, block_len, levels);
     end = clock();
     tps = (double)(end - begin);
     printf("Tps taylor shift without truncation : %f\n", tps);
