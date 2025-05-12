@@ -20,12 +20,9 @@ typedef struct solution
   int is_exact;
 } solution;
 
+
 void div_by_x(fmpz_poly_t pol);
-
-void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp,fmpz_poly_t *power_array, slong threshold);
-
 void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_neg_sol, slong *upper_power_of_two_pos, slong *upper_power_of_two_neg);
-
 void compose_mult_2exp(fmpz_poly_t result, fmpz_poly_t pol, slong exp);
 
 #endif
