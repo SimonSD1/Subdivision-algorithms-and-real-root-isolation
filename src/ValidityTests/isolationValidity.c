@@ -56,11 +56,11 @@ int main(void)
     filePoly = fopen(pathFile, "r");
     if(!fmpz_poly_fread(filePoly, pol))
         printf("Could not read the FILE");
-
     fclose(filePoly);
-    //fmpz_poly_set_str(pol, "4  -4 8 -5 1");
 
+    //fmpz_poly_set_str(pol, "4  -4 8 -5 1");
     //fmpz_poly_print_pretty(pol, "x");
+    //readPolyDATA(pol, 0, 2);
 
     slong nb_sol, nb_neg_sol;
     solution *solutions = NULL;
@@ -78,7 +78,6 @@ int main(void)
     int nb_maple_roots = 0;
     double* maple_roots = read_maple_roots("src/bin/maple_roots.txt", &nb_maple_roots);
     printf("Maple found %d roots\n", nb_maple_roots);
-
     for (int i=nb_neg_sol-1; i>=0; i--) //we print negative roots intervals first
     {
         double denom = (double)(1LL << solutions[i].k);
@@ -100,7 +99,7 @@ int main(void)
             printf("Solution in interval: [ %lf , %lf ]", -upper, -lower);
             double root = maple_roots[nb_neg_sol-1 - i];
             if (root >= -upper && root <= -lower)
-                printf(" -> Maple root %lf is inside this interval yayyy\n", root);
+                printf(" -> Maple root %lf is inside this interval ✅\n", root);
             else
                 printf(" -> No Maple root found inside this interval :(\n");
         }
@@ -131,7 +130,7 @@ int main(void)
             printf("Solution in interval: [ %lf , %lf ]", lower, upper);
             double root = maple_roots[i];
             if (root >= lower && root <= upper)
-                printf(" -> Maple root %lf is inside this interval yayyy\n", root);
+                printf(" -> Maple root %lf is inside this interval ✅\n", root);
             else
                 printf(" -> No Maple root found inside this interval :(\n");
         }

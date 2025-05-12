@@ -8,6 +8,8 @@
 #ifndef TAYLOR_SHIFT_IMPLEM_H
 #define TAYLOR_SHIFT_IMPLEM_H
 
+#define THRESHOLD 512
+
 extern fmpz **global_precomputed;  // Array of fmpz vectors
 extern slong *global_precomputed_len; // Array of vector lengths
 extern slong global_precomputed_size;
@@ -19,10 +21,10 @@ void free_global_precomputed();
 void poly_shift_plus_one_Precomputed(fmpz_poly_t g, const fmpz_poly_t poly);
 void poly_shift_plus_one_Non_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly);
 void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a);
-void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, slong threshold, fmpz_poly_t* power_array);
-slong compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong threshold);
+void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, fmpz_poly_t* power_array, slong block_len, slong levels);
+void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_block_len, slong *_levels);
 void fmpz_compute_binom_poly(fmpz_poly_t binom_poly, slong n);
-void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, slong threshold, fmpz_poly_t* power_array);
+void free_precompute_table(fmpz_poly_t* power_array, slong levels);
 
 
 

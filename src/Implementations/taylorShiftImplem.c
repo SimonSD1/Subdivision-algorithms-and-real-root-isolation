@@ -199,20 +199,22 @@ void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a){
 }
 
 
-slong compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong threshold){
+void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_block_len, slong *_levels){
   
     slong len = poly->length;
     slong block_len = len;
 
     // Reduce block length until it is <= threshold
-    while (block_len > threshold)
+    while (block_len > THRESHOLD)
         block_len /= 2;
 
     // Find the nearest power of 2
     int l = log_two(len / block_len);
 
     if(l==0){
-        return 0;
+        *_levels = 0;
+        *_block_len = block_len;
+        return;
     }
 
     (*power_array) = malloc(l * sizeof(fmpz_poly_t));
@@ -233,29 +235,23 @@ slong compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong thr
             (*power_array)[i - 1]->coeffs, (block_len + 1) * (1 << (i - 1)));
     }
 
-    return l;
+    *_levels = l;
+    *_block_len = block_len;
 }
 
 
-void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, slong threshold, fmpz_poly_t* power_array)
+void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, fmpz_poly_t* power_array, slong block_len, slong levels)
 {
     slong len = poly->length;
-    slong block_len = len;
 
-    // Reduce block length until it is <= threshold
-    while (block_len > threshold)
-        block_len /= 2;
-
-    // Find the nearest power of 2
-    slong l = log_two(len / block_len);
-    slong nblocks = 1 << l;
+    slong nblocks = 1 << levels;
     slong last_block_len = len - (nblocks - 1) * block_len;
 
     fmpz_t one;
     fmpz_init_set_ui(one, 1);
 
     // Base case: if polynomial is small enough, do direct Taylor shift
-    if (len <= threshold)
+    if (len <= THRESHOLD)
     {
         fmpz_poly_taylor_shift_horner(result, poly, one);
         fmpz_clear(one);
@@ -279,7 +275,7 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     slong current_last_block_len = last_block_len;
     int iter = 0;
 
-    while (iter < l)
+    while (iter < levels)
     {
         fmpz *binom_coeffs = power_array[iter]->coeffs;
         slong n_pairs = current_nblocks / 2;
@@ -314,4 +310,12 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     fmpz_clear(one);
     fmpz_poly_clear(mul_res);
     fmpz_poly_clear(temp_poly);
+}
+
+
+void free_precompute_table(fmpz_poly_t* power_array, slong levels){
+    //cleanup the precomputation
+    for (int i = 0; i < levels; i++)
+        fmpz_poly_clear(power_array[i]);
+    free(power_array);
 }

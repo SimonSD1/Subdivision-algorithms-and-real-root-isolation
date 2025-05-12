@@ -36,7 +36,7 @@ int fmpz_poly_is_half_root(fmpz_poly_t pol)
 }
 
 // on calcul pol(1/(x+1))
-void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t* power_array, slong threshold)
+void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t* power_array, slong block_len, slong levels)
 {
   // fmpz_poly_init(result);
 
@@ -49,7 +49,7 @@ void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t* power_a
   // reverse et shift
 
   fmpz_poly_reverse(result, pol, degre + 1);
-  iterative_taylor_shift_precompute(result, result, threshold,power_array);
+  iterative_taylor_shift_precompute(result, result,power_array, block_len, levels);
 }
 
 
@@ -104,7 +104,7 @@ void split_right(fmpz_poly_t result, const fmpz_poly_t pol)
 
 
 
-void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp,fmpz_poly_t *power_array, slong threshold )
+void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp,fmpz_poly_t *power_array, slong block_len, slong levels)
 {
   fmpz_t eval;
   fmpz_init(eval);
@@ -142,7 +142,7 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     exact_root = 1;
   }
 
-  var_change_to_inf(var_changed, pol, power_array, threshold);
+  var_change_to_inf(var_changed, pol, power_array, block_len, levels);
 
   int sign_changes = descartes_rule(var_changed);
 
@@ -180,11 +180,11 @@ void isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions
     fmpz_t c_transformed;
     fmpz_mul_2exp(c_transformed, c, 1);
 
-    isolation_recursive(pol_left, c_transformed, k + 1, solutions, nb_sol, temp, power_array,threshold);
+    isolation_recursive(pol_left, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels);
 
     fmpz_add_ui(c_transformed, c_transformed, 1);
 
-    isolation_recursive(pol_right, c_transformed, k + 1, solutions, nb_sol, temp,power_array,threshold);
+    isolation_recursive(pol_right, c_transformed, k + 1, solutions, nb_sol, temp,power_array, block_len, levels);
   }
 
   fmpz_clear(eval);
@@ -222,7 +222,7 @@ void compose_mult_2exp(fmpz_poly_t result, fmpz_poly_t pol, slong exp)
 
 
 
-void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *upper_power_of_two)
+void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *upper_power_of_two, fmpz_poly_t *power_array, slong block_len, slong levels)
 {
   // on fait fait le changement de variable pour avoir les racines sur [0,1]
   fmpz_t root_upper_bound;
@@ -230,12 +230,6 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
 
   fmpz_poly_t compressed_pol;
   fmpz_poly_init(compressed_pol);
-
-  fmpz_poly_t *power_array;
-
-  slong threshold=2;
-
-  compute_power_array(&power_array, pol, threshold);
 
   local_max_bound_implementation(root_upper_bound, pol);
 
@@ -252,7 +246,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   fmpz_init(temp);
 
   
-  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, threshold);
+  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels);
 
 
 
@@ -287,10 +281,14 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_n
   *solutions = malloc(max_nb_roots * sizeof(solution));
   *nb_sol = 0;
 
-  isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg);
+  fmpz_poly_t *power_array = NULL;
+  slong block_len, levels;
+  compute_power_array(&power_array, pol, &block_len, &levels);
+
+  isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg, power_array, block_len, levels);
   *nb_neg_sol = *nb_sol;
 
-  isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos);
+  isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos, power_array, block_len, levels);
   
 
   fmpz_poly_clear(pol_neg);

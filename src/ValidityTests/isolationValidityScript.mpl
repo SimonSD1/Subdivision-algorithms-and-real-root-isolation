@@ -22,8 +22,9 @@ ExportRoots := proc(roots, filepath)
 end proc:
 
 with(RootFinding):
-f := randpoly([x], degree = 100, dense, coeffs = rand(-2^256 .. 2^256)):
+f := randpoly([x], degree = 2000, dense, coeffs = rand(-2^1500 .. 2^1500)):
 WriteUFile(f, "D:/Users/Joshua/Documents/cours-FAC/M1-S2/Subdivision-algorithms-and-real-root-isolation/src/bin/test.out"):
 sols := Isolate(f, x):
+print(sols);
 ExportRoots(sols, "D:/Users/Joshua/Documents/cours-FAC/M1-S2/Subdivision-algorithms-and-real-root-isolation/src/bin/maple_roots.txt"):
 
