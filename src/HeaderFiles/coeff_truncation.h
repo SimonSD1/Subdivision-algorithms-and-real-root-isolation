@@ -14,6 +14,7 @@
 
 int same_signs(const fmpz_poly_t poly1, const fmpz_poly_t poly2);
 void fmpz_trunc(fmpz_t rop, const fmpz_t op, slong keep_bits);
-void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly);
+void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly, slong trunc);
+
 
 #endif // COEFF_TRUNCATION_H
