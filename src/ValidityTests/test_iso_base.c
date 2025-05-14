@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "../HeaderFiles/functionsForTests.h"
+#include "../HeaderFiles/coeff_truncation.h"
 
 #define MAX_ROOTS 10000
 
@@ -17,7 +18,14 @@ int main(void)
     fmpz_poly_t pol;
     fmpz_poly_init(pol);
     
-    readPolyDATA(pol, 0, 1);
+    readPolyDATA(pol, 1, 1);
+
+    //truncate_coefficients(pol,pol,7000);
+
+    fmpz_poly_print_pretty(pol,"x");
+
+    printf("\n");
+    printf("degree = %ld",pol->length);
 
     slong nb_sol, nb_neg_sol;
     solution *solutions = NULL;

@@ -47,9 +47,7 @@ int main()
 
         slong degree = poly_trunc->length - 1;
 
-        slong remainding_bit_target = max_bits/2;
-
-        
+        slong remainding_bit_target = max_bits / 2;
 
         slong to_truncate = max_bits - remainding_bit_target;
 
@@ -81,8 +79,8 @@ int main()
         for (slong j = 0; j < poly->length; j++)
         {
 
-            fmpz_t *coeff_poly = &(poly->coeffs[j]);
-            fmpz_t *coeff_poly_trunc = &(poly_trunc->coeffs[j]);
+            fmpz *coeff_poly = &(poly->coeffs[j]);
+            fmpz *coeff_poly_trunc = &(poly_trunc->coeffs[j]);
 
             int sign_poly = fmpz_cmp_ui(coeff_poly, 0);
 
@@ -99,7 +97,7 @@ int main()
             if (sign_poly != sign_truncated)
             {
                 nb_mismatch++;
-                if (fmpz_cmp(coeff_poly_trunc, precision_limit))
+                if (fmpz_cmpabs(coeff_poly_trunc, precision_limit) < 0)
                 {
                     unreliable_mismatch++;
                 }
@@ -110,7 +108,7 @@ int main()
             }
         }
 
-        printf("\nnb_mismatch=%d, nb_unreliable=%d, nb_unreliable_mismatch=%d\n, degree=%ld", nb_mismatch, nb_unreliable, unreliable_mismatch,degree);
+        printf("\nnb_mismatch=%d, nb_unreliable=%d, nb_unreliable_mismatch=%d\n, degree=%ld", nb_mismatch, nb_unreliable, unreliable_mismatch, degree);
     }
 
     FILE *fileResults;
