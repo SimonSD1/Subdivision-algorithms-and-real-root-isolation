@@ -21,13 +21,13 @@ int main(int argc, char const *argv[])
     flint_randinit(state);
     flint_randseed(state, time(NULL), clock()); // Seed with current time & clock ticks
 
-    //fmpz_poly_randtest(poly, state, 100, 10000);
-    //fmpz_poly_set_coeff_fmpz(poly,0,FMPZ_ONE);
+    fmpz_poly_randtest(poly, state, 10, 20);
+    fmpz_poly_set_coeff_fmpz(poly,0,FMPZ_ONE);
 
     //fmpz_poly_set_str(poly,"6  840 -26616 26546 -9253 1354 -71");
 
 
-    fmpz_poly_set_str(poly,"3  3 -4 1");
+    //fmpz_poly_set_str(poly,"3  3 -4 1");
 
     //-71*x^5 + 1354*x^4 - 9253*x^3 + 26546*x^2 - 26616*x + 840
 

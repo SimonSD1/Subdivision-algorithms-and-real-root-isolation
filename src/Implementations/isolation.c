@@ -125,19 +125,13 @@ void divide2exp_coeff_in_place(fmpz_poly_t pol, slong exp){
   }
 }
 
-slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp, fmpz_poly_t *power_array, slong block_len, slong levels)
+slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp, fmpz_poly_t *power_array, slong block_len, slong levels, fmpz_poly_t poly_temp)
 {
-  fmpz_t eval;
-  fmpz_init(eval);
 
-  fmpz_poly_t var_changed;
-  fmpz_poly_init(var_changed);
 
   //printf("dans recursion pol = ");
   //fmpz_poly_print_pretty(pol, "x");
   //printf("\n");
-
-  evaluate_0(eval, pol);
 
   int exact_root = 0;
 
@@ -170,9 +164,9 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     exact_root = 1;
   }
 
-  var_change_to_inf(var_changed, pol, power_array, block_len, levels);
+  var_change_to_inf(poly_temp, pol, power_array, block_len, levels);
 
-  int sign_changes = descartes_rule(var_changed);
+  int sign_changes = descartes_rule(poly_temp);
 
   if (sign_changes == 0)
   {
@@ -187,9 +181,9 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     if (!exact_root)
     {
       // exactly one solution in this interval
-      printf("ajoute interval : c=");
-      fmpz_print(c);
-      printf(" k=%ld\n", k);
+      //printf("ajoute interval : c=");
+      //fmpz_print(c);
+      //printf(" k=%ld\n", k);
       fmpz_set(solutions[*nb_sol].c, c);
       solutions[*nb_sol].k = k;
       solutions[*nb_sol].is_exact = 0;
@@ -208,10 +202,10 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
 
     compose_divide_2_in_place(pol);
 
-    printf("left = ");
-    fmpz_poly_print_pretty(pol, "x");
-    printf("\n");
-    depth_left = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels);
+    //printf("left = ");
+    //fmpz_poly_print_pretty(pol, "x");
+    //printf("\n");
+    depth_left = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels,poly_temp);
 
     // printf("depth lef = %ld\n", depth_left);
     fmpz_add_ui(c_transformed, c_transformed, 1);
@@ -230,26 +224,22 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     //printf("\n");
     if (depth_left > 0)
     {
-      printf("depth>0, = %ld\n",depth_left);
+      //printf("depth>0, = %ld\n",depth_left);
       //compose_div_by_2exp_in_place(pol, depth_left);
       compose_mult_2exp_in_place(pol,depth_left);
       // on doit encore diviser par 2**depth_left
       divide2exp_coeff_in_place(pol,(pol->length-1)*depth_left);
     }
 
-    printf("right = ");
-    fmpz_poly_print_pretty(pol, "x");
-    printf("\n");
-    depth_right = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels);
+    //printf("right = ");
+    //fmpz_poly_print_pretty(pol, "x");
+    //printf("\n");
+    depth_right = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels,poly_temp);
 
     // printf("depth right = %ld\n", depth_right);
 
     fmpz_clear(c_transformed);
   }
-
-  fmpz_clear(eval);
-  fmpz_poly_clear(var_changed);
-
   
   return 1+depth_right;
 }
@@ -262,6 +252,9 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
 
   fmpz_poly_t compressed_pol;
   fmpz_poly_init(compressed_pol);
+
+  fmpz_poly_t temp_poly;
+  fmpz_poly_init(temp_poly);
 
   printf("bound\n");
   //fmpz_poly_print_pretty(pol, "x");
@@ -290,7 +283,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   fmpz_t temp;
   fmpz_init(temp);
 
-  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels);
+  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels, temp_poly);
 
   fmpz_poly_clear(compressed_pol);
   fmpz_clear(temp);
