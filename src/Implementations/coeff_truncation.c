@@ -48,10 +48,7 @@ int same_signs(const fmpz_poly_t poly1, const fmpz_poly_t poly2)
 
 void truncate_coefficients(fmpz_poly_t result, const fmpz_poly_t poly, slong trunc)
 {
-    if(result!=poly){
-        fmpz_poly_init2(result,poly->length);
-    }
-
+    fmpz_poly_fit_length(result,poly->length);
     for(slong i=0; i<poly->length;i++){
         fmpz_tdiv_q_2exp(&(result->coeffs[i]),&(poly->coeffs[i]),trunc);
     }

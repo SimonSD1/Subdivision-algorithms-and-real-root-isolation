@@ -52,9 +52,9 @@ void var_change_to_inf(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t *power_a
   // reverse et shift
 
   fmpz_poly_reverse(result, pol, degre + 1);
-  // iterative_taylor_shift_precompute(result, result, power_array, block_len, levels);
+  iterative_taylor_shift_precompute(result, result, power_array, block_len, levels);
 
-  fmpz_poly_taylor_shift(result, result, FMPZ_ONE);
+  // fmpz_poly_taylor_shift(result, result, FMPZ_ONE);
 }
 
 void var_change_to_inf_perso(fmpz_poly_t result, fmpz_poly_t pol, fmpz_poly_t *power_array, slong block_len, slong levels)
@@ -146,7 +146,66 @@ void divide2exp_coeff_in_place(fmpz_poly_t pol, slong exp)
   }
 }
 
-slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp, fmpz_poly_t *power_array, slong block_len, slong levels, fmpz_poly_t poly_temp)
+slong sign_changes_trunc(fmpz_poly_t poly)
+{
+  slong degree = poly->length - 1;
+  //slong nb_reliable = 0;
+
+  slong sign_changes = 0;
+  slong last_sign = 0;
+
+  fmpz_t precision_limit;
+  fmpz_init(precision_limit);
+  fmpz_set_si(precision_limit, 1);
+  fmpz_mul_2exp(precision_limit, precision_limit, degree + 1);
+
+  for (int i = 0; i <= degree; i++)
+  {
+    fmpz *coeff_poly = &(poly->coeffs[i]);
+
+    //printf("prec : ");
+    //fmpz_print(precision_limit);
+    //printf(" coeff :  ");
+    //fmpz_print(coeff_poly);
+    //printf("\n");
+    //  on compte le changment uniquement si le coeff est assez grand pour avoir le bon signe
+    if (fmpz_cmpabs(coeff_poly, precision_limit) > 0)
+    {
+      //printf("reliable\n");
+      //nb_reliable++;
+      if (!fmpz_is_zero(coeff_poly))
+      {
+        int sign = fmpz_sgn(coeff_poly);
+        if (last_sign != 0 && sign != last_sign)
+        {
+          sign_changes++;
+          
+        }
+        last_sign=sign;
+      }
+    }
+
+    //if (nb_reliable == degree + 1)
+    //{
+    //  //printf("asser reliable\n");
+    //  fmpz_clear(precision_limit);
+    //  return sign_changes;
+    //}
+
+    if (sign_changes >= 2)
+    {
+      //printf("return %ld\n",sign_changes);
+      fmpz_clear(precision_limit);
+      return sign_changes;
+    }
+  }
+
+  fmpz_clear(precision_limit);
+  // si on a pas eu assez de coeff reliable pour trouver 2 ou plus changement de signe on renvoit -1 pour le signaler
+  return -1;
+}
+
+slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp, fmpz_poly_t *power_array, slong block_len, slong levels, fmpz_poly_t poly_temp, int trunc_true)
 {
   // fmpq_t affiche;
   // fmpq_init(affiche);
@@ -163,12 +222,12 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
   // printf("\n");
 
   slong depth_left, depth_right;
-  //printf("nb sol = %ld\n", *nb_sol);
+  // printf("nb sol = %ld\n", *nb_sol);
 
   if (fmpz_is_zero(&(pol->coeffs[0])))
   {
-    //printf("div par x\n");
-    //    if 0 is solution we can divide by x
+    // printf("div par x\n");
+    //     if 0 is solution we can divide by x
     div_by_x(pol);
     // printf("apres div par x\n");
     // fmpz_poly_print_pretty(pol,"x");
@@ -181,48 +240,70 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     (*nb_sol)++;
   }
 
-  // on peut diviser par (x- 1/2)
-  // if (fmpz_poly_is_half_root(pol))
-  //{
-  //  printf("root /2\n");
-  //  fmpz_set(temp, c);
-  //  fmpz_mul_2exp(temp, temp, 1);
-  //  fmpz_add_si(temp, temp, 1);
-  //  fmpz_set(solutions[*nb_sol].c, temp);
-  //  solutions[*nb_sol].k = k + 1;
-  //  solutions[*nb_sol].is_exact = 1;
-  //  (*nb_sol)++;
-  //  exact_root = 1;
-  //}
+  slong reliable_sign_changes = 0;
 
-  var_change_to_inf(poly_temp, pol, power_array, block_len, levels);
-  // printf("poly apres var change = ");
-  // fmpz_poly_print_pretty(poly_temp,"x");
-  // printf("\n");
-  int sign_changes = descartes_rule(poly_temp);
+  if (trunc_true)
+  {
+    // here we truncate the coeffificient hoping that there will be enough reliable to decide if we bisect or not
+    slong max_bits = fmpz_poly_max_bits(pol);
+    if (max_bits < 0)
+    {
+      max_bits = -max_bits;
+    }
+    slong degree = pol->length - 1;
+    slong remainding_bit_target = degree*2;
+    slong to_truncate = (max_bits - remainding_bit_target);
+    if (to_truncate < 0)
+    {
+      to_truncate = 0;
+    }
 
-  if (sign_changes == 0)
+    truncate_coefficients(poly_temp, pol, to_truncate);
+
+    var_change_to_inf(poly_temp, poly_temp, power_array, block_len, levels);
+
+    slong nb_sign_changes_trunc = sign_changes_trunc(poly_temp);
+
+    if (nb_sign_changes_trunc != -1)
+    {
+      //printf("pas le vrai\n");
+      reliable_sign_changes = nb_sign_changes_trunc;
+    }
+    else
+    {
+      //printf("fait le vrai\n");
+      var_change_to_inf(poly_temp, pol, power_array, block_len, levels);
+      reliable_sign_changes = descartes_rule(poly_temp);
+    }
+  }
+  else
+  {
+    var_change_to_inf(poly_temp, pol, power_array, block_len, levels);
+    reliable_sign_changes = descartes_rule(poly_temp);
+  }
+
+  if (reliable_sign_changes == 0)
   {
     // nothing in this interval
     // printf("rien ici\n");
     return 0;
   }
 
-  else if (sign_changes == 1)
+  else if (reliable_sign_changes == 1)
   {
     // printf("1 sign change\n");
 
     // exactly one solution in this interval
-    //printf("ajoute interval : c=");
-    //fmpz_print(c);
-    //printf(" k=%ld\n", k);
+    // printf("ajoute interval : c=");
+    // fmpz_print(c);
+    // printf(" k=%ld\n", k);
     fmpz_set(solutions[*nb_sol].c, c);
     solutions[*nb_sol].k = k;
     solutions[*nb_sol].is_exact = 0;
     (*nb_sol)++;
 
     // for(int i=0;i<100;i++)
-    //printf("ajout succesull\n");
+    // printf("ajout succesull\n");
 
     return 0;
   }
@@ -240,7 +321,7 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     // printf("left = ");
     //  fmpz_poly_print_pretty(pol, "x");
     // printf("\n");
-    depth_left = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp);
+    depth_left = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
 
     // printf("depth lef = %ld\n", depth_left);
     fmpz_add_ui(c_transformed, c_transformed, 1);
@@ -252,7 +333,8 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     // printf("\n");
     fmpz_t one;
     fmpz_init_set_si(one, 1);
-    fmpz_poly_taylor_shift(pol, pol, one);
+    // fmpz_poly_taylor_shift(pol, pol, one);
+    iterative_taylor_shift_precompute(pol, pol, power_array, block_len, levels);
 
     // printf("apres shift= ");
     //  fmpz_poly_print_pretty(pol, "x");
@@ -269,7 +351,7 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     // printf("right = ");
     //  fmpz_poly_print_pretty(pol, "x");
     //  printf("\n");
-    depth_right = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp);
+    depth_right = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
 
     // printf("depth right = %ld\n", depth_right);
 
@@ -279,7 +361,7 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
   return 1 + depth_right;
 }
 
-void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *upper_power_of_two, fmpz_poly_t *power_array, slong block_len, slong levels)
+void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *upper_power_of_two, fmpz_poly_t *power_array, slong block_len, slong levels, int trunc_true)
 {
   // on fait fait le changement de variable pour avoir les racines sur [0,1]
   fmpz_t root_upper_bound;
@@ -309,7 +391,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   compose_mult_2exp_in_place(compressed_pol, *upper_power_of_two);
 
   printf("polynome compresse = ");
-  //fmpz_poly_print_pretty(compressed_pol, "x");
+  // fmpz_poly_print_pretty(compressed_pol, "x");
   printf("\n");
 
   fmpz_t zero;
@@ -318,7 +400,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   fmpz_t temp;
   fmpz_init(temp);
 
-  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels, temp_poly);
+  isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels, temp_poly, trunc_true);
 
   // for(int i=0; i<1000;i++)
   // printf("fin isol recursif\n");
@@ -353,7 +435,7 @@ void clear_power_array(fmpz_poly_t **p_array, slong num_elements_in_power_array)
   *p_array = NULL;
 }
 
-void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_neg_sol, slong *upper_power_of_two_pos, slong *upper_power_of_two_neg)
+void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_neg_sol, slong *upper_power_of_two_pos, slong *upper_power_of_two_neg, int trunc_true)
 {
   slong max_nb_roots;
   max_nb_roots = descartes_rule(pol);
@@ -373,22 +455,22 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_n
 
   for (slong i = 0; i < max_nb_roots; i++)
   {
-    fmpz_init((*solutions)[i].c); 
+    fmpz_init((*solutions)[i].c);
   }
 
   fmpz_poly_t *power_array = NULL;
   slong block_len, levels;
   compute_power_array(&power_array, pol, &block_len, &levels);
 
-  isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg, power_array, block_len, levels);
+  isolation_pos(pol_neg, *solutions, nb_sol, upper_power_of_two_neg, power_array, block_len, levels, trunc_true);
   *nb_neg_sol = *nb_sol;
 
   printf("fini les negatif\n");
   printf("passe a pol = ");
-  //fmpz_poly_print_pretty(pol, "x");
+  // fmpz_poly_print_pretty(pol, "x");
   printf("\n");
 
-  isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos, power_array, block_len, levels);
+  isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos, power_array, block_len, levels, trunc_true);
   // clear_power_array(&power_array, levels);
   fmpz_poly_clear(pol_neg);
 }
