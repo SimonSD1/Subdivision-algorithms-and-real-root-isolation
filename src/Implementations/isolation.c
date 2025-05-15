@@ -163,11 +163,11 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
   // printf("\n");
 
   slong depth_left, depth_right;
-  printf("nb sol = %ld\n", *nb_sol);
+  //printf("nb sol = %ld\n", *nb_sol);
 
   if (fmpz_is_zero(&(pol->coeffs[0])))
   {
-    printf("div par x\n");
+    //printf("div par x\n");
     //    if 0 is solution we can divide by x
     div_by_x(pol);
     // printf("apres div par x\n");
@@ -213,16 +213,16 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     // printf("1 sign change\n");
 
     // exactly one solution in this interval
-    printf("ajoute interval : c=");
-    fmpz_print(c);
-    printf(" k=%ld\n", k);
+    //printf("ajoute interval : c=");
+    //fmpz_print(c);
+    //printf(" k=%ld\n", k);
     fmpz_set(solutions[*nb_sol].c, c);
     solutions[*nb_sol].k = k;
     solutions[*nb_sol].is_exact = 0;
     (*nb_sol)++;
 
     // for(int i=0;i<100;i++)
-    printf("ajout succesull\n");
+    //printf("ajout succesull\n");
 
     return 0;
   }
@@ -309,7 +309,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   compose_mult_2exp_in_place(compressed_pol, *upper_power_of_two);
 
   printf("polynome compresse = ");
-  fmpz_poly_print_pretty(compressed_pol, "x");
+  //fmpz_poly_print_pretty(compressed_pol, "x");
   printf("\n");
 
   fmpz_t zero;
@@ -322,7 +322,7 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
 
   // for(int i=0; i<1000;i++)
   // printf("fin isol recursif\n");
-  // fmpz_poly_clear(compressed_pol);
+  fmpz_poly_clear(compressed_pol);
   fmpz_poly_clear(temp_poly);
   fmpz_clear(temp);
   fmpz_clear(zero);
@@ -385,7 +385,7 @@ void isolation(fmpz_poly_t pol, solution **solutions, slong *nb_sol, slong *nb_n
 
   printf("fini les negatif\n");
   printf("passe a pol = ");
-  fmpz_poly_print_pretty(pol, "x");
+  //fmpz_poly_print_pretty(pol, "x");
   printf("\n");
 
   isolation_pos(pol, *solutions, nb_sol, upper_power_of_two_pos, power_array, block_len, levels);
