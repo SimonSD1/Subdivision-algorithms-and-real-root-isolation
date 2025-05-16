@@ -29,6 +29,8 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
 
 slong sign_changes_trunc(fmpz_poly_t poly);
 
+void reduce_poly_2exp(fmpz_poly_t pol);
+
 
 
 #endif

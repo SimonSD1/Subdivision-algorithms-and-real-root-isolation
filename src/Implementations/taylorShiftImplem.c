@@ -11,26 +11,25 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include "../HeaderFiles/taylorShift_implem.h"
-#include  <flint/thread_pool.h>
-#include  <flint/thread_support.h>
-
+#include <flint/thread_pool.h>
+#include <flint/thread_support.h>
 
 fmpz **global_precomputed = NULL;
 slong *global_precomputed_len = NULL;
 slong global_precomputed_size = 0;
 
-
-
-void load_precomputed_polynomials(slong max_m) {
+void load_precomputed_polynomials(slong max_m)
+{
     global_precomputed_size = max_m;
-    
+
     // Allocate array of fmpz* pointers and length storage
     global_precomputed = flint_malloc(max_m * sizeof(fmpz *));
     global_precomputed_len = flint_malloc(max_m * sizeof(slong));
-    
-    for (slong i = 0; i < max_m; i++) {
+
+    for (slong i = 0; i < max_m; i++)
+    {
         fmpz *tmp = _fmpz_vec_init(i + 1);
-        
+
         /* Now we generate (x+c)^len1 using binomial expansion. It's redundant
         to do this in all branches of the tree, but since it's just O(d),
         it's going to be cheap compared to the actual multiplications
@@ -44,24 +43,26 @@ void load_precomputed_polynomials(slong max_m) {
             }
             else
             {
-            fmpz_mul_ui(tmp + k, tmp + k - 1, i + 1 - k);
-            fmpz_divexact_ui(tmp + k, tmp + k, k);
+                fmpz_mul_ui(tmp + k, tmp + k - 1, i + 1 - k);
+                fmpz_divexact_ui(tmp + k, tmp + k, k);
             }
         }
-        
+
         // Store coefficients as raw vector
-        global_precomputed_len[i] = i+1;
+        global_precomputed_len[i] = i + 1;
         global_precomputed[i] = _fmpz_vec_init(global_precomputed_len[i]);
         _fmpz_vec_set(global_precomputed[i], tmp, global_precomputed_len[i]);
-        
+
         _fmpz_vec_clear(tmp, i + 1);
     }
-
 }
 
-void free_global_precomputed() {
-    if (global_precomputed) {
-        for (slong i = 0; i < global_precomputed_size; i++) {
+void free_global_precomputed()
+{
+    if (global_precomputed)
+    {
+        for (slong i = 0; i < global_precomputed_size; i++)
+        {
             _fmpz_vec_clear(global_precomputed[i], global_precomputed_len[i]);
         }
         flint_free(global_precomputed);
@@ -72,16 +73,15 @@ void free_global_precomputed() {
     global_precomputed_size = 0;
 }
 
-
-
-
-void divide_conquer_recursive(fmpz * poly, slong len) {
+void divide_conquer_recursive(fmpz *poly, slong len)
+{
     fmpz *tmp, *tmp2;
     slong len1, len2;
     slong bits, cutoff;
     fmpz_t shift;
 
-    if (len < 50) {
+    if (len < 50)
+    {
         fmpz_init_set_si(shift, 1);
         _fmpz_poly_taylor_shift_horner(poly, shift, len);
         fmpz_clear(shift);
@@ -93,25 +93,24 @@ void divide_conquer_recursive(fmpz * poly, slong len) {
     cutoff = 100 + 10 * n_sqrt(FLINT_MAX(bits - FLINT_BITS, 0));
 
     cutoff = FLINT_MIN(cutoff, 1000);
-    if (len < cutoff) {
+    if (len < cutoff)
+    {
         fmpz_init_set_si(shift, 1);
         _fmpz_poly_taylor_shift_horner(poly, shift, len);
         fmpz_clear(shift);
         return;
     }
 
-    len1 = len/2;
+    len1 = len / 2;
     len2 = len - len1;
 
     divide_conquer_recursive(poly, len1);
     divide_conquer_recursive(poly + len1, len2);
 
-
     tmp = _fmpz_vec_init(len1 + 1);
     tmp2 = _fmpz_vec_init(len);
 
     _fmpz_vec_set(tmp, global_precomputed[len1], global_precomputed_len[len1]);
-
 
     _fmpz_poly_mul(tmp2, tmp, len1 + 1, poly + len1, len2);
 
@@ -122,13 +121,13 @@ void divide_conquer_recursive(fmpz * poly, slong len) {
     _fmpz_vec_clear(tmp2, len);
 }
 
-void poly_shift_plus_one_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly) {
+void poly_shift_plus_one_Precomputed(fmpz_poly_t result, const fmpz_poly_t poly)
+{
     if (poly != result)
         fmpz_poly_set(result, poly);
 
     divide_conquer_recursive(result->coeffs, result->length);
 }
-
 
 double log_two(slong x)
 {
@@ -147,7 +146,6 @@ double log_two(slong x)
     return result;
 }
 
-
 void fmpz_compute_binom_poly(fmpz_poly_t binom_poly, slong n)
 {
     fmpz_poly_one(binom_poly);
@@ -165,42 +163,42 @@ void fmpz_compute_binom_poly(fmpz_poly_t binom_poly, slong n)
     }
 }
 
-
-
-void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a){
+void naiveShift(fmpz_poly_t result, fmpz_poly_t poly, fmpz_t a)
+{
     fmpz_poly_init(result);
-    slong length=poly->length;
+    slong length = poly->length;
 
     fmpz_poly_t power;
     fmpz_poly_init(power);
-    fmpz_poly_set_coeff_si(power, 0,1);
+    fmpz_poly_set_coeff_si(power, 0, 1);
 
     fmpz_poly_t x_plus_a;
     fmpz_poly_init(x_plus_a);
     fmpz_poly_set_coeff_si(x_plus_a, 1, 1);
     fmpz_poly_set_coeff_fmpz(x_plus_a, 0, a);
-    
+
     fmpz_t coeff;
     fmpz_init(coeff);
 
     fmpz_poly_t temp;
     fmpz_poly_init(temp);
-    
-    for(slong i=0; i<length; i++){
-        fmpz_poly_get_coeff_fmpz(coeff,poly,i);
+
+    for (slong i = 0; i < length; i++)
+    {
+        fmpz_poly_get_coeff_fmpz(coeff, poly, i);
 
         // poly_i * (x+a)^i
-        fmpz_poly_scalar_mul_fmpz(temp,power,coeff);
+        fmpz_poly_scalar_mul_fmpz(temp, power, coeff);
 
-        fmpz_poly_add(result,result,temp);
+        fmpz_poly_add(result, result, temp);
 
-        fmpz_poly_mul(power,power,x_plus_a);
+        fmpz_poly_mul(power, power, x_plus_a);
     }
 }
 
+void compute_power_array(fmpz_poly_t **power_array, fmpz_poly_t poly, slong *_block_len, slong *_levels)
+{
 
-void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_block_len, slong *_levels){
-  
     slong len = poly->length;
     slong block_len = len;
 
@@ -211,7 +209,8 @@ void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_bl
     // Find the nearest power of 2
     int l = log_two(len / block_len);
 
-    if(l==0){
+    if (l == 0)
+    {
         *_levels = 0;
         *_block_len = block_len;
         return;
@@ -219,14 +218,11 @@ void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_bl
 
     (*power_array) = malloc(l * sizeof(fmpz_poly_t));
 
-
-   
     for (int i = 0; i < l; i++)
         fmpz_poly_init2((*power_array)[i], (block_len + 1) * (1 << i));
 
     fmpz_compute_binom_poly((*power_array)[0], block_len);
 
-    
     for (int i = 1; i < l; i++)
     {
         _fmpz_poly_mul(
@@ -239,8 +235,7 @@ void compute_power_array(fmpz_poly_t** power_array, fmpz_poly_t poly, slong *_bl
     *_block_len = block_len;
 }
 
-
-void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, fmpz_poly_t* power_array, slong block_len, slong levels)
+void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t poly, fmpz_poly_t *power_array, slong block_len, slong levels)
 {
     slong len = poly->length;
 
@@ -255,9 +250,8 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     {
         fmpz_poly_taylor_shift_horner(result, poly, one);
         fmpz_clear(one);
-        return ;
+        return;
     }
-
     fmpz_poly_t temp_poly, mul_res;
     fmpz_poly_init2(temp_poly, len);
     fmpz_poly_init2(mul_res, len);
@@ -274,6 +268,8 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     slong current_nblocks = nblocks;
     slong current_last_block_len = last_block_len;
     int iter = 0;
+
+    _fmpz_poly_remove_content_2exp(temp_poly->coeffs, temp_poly->length);
 
     while (iter < levels)
     {
@@ -298,6 +294,8 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
         _fmpz_poly_mul(mul_res->coeffs, p1, current_last_block_len, binom_coeffs, current_len + 1);
         _fmpz_poly_add(res, p0, current_len, mul_res->coeffs, current_len + current_last_block_len);
 
+        _fmpz_poly_remove_content_2exp(temp_poly->coeffs, temp_poly->length);
+
         current_last_block_len += current_len;
         current_len *= 2;
         current_nblocks /= 2;
@@ -312,9 +310,9 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     fmpz_poly_clear(temp_poly);
 }
 
-
-void free_precompute_table(fmpz_poly_t* power_array, slong levels){
-    //cleanup the precomputation
+void free_precompute_table(fmpz_poly_t *power_array, slong levels)
+{
+    // cleanup the precomputation
     for (int i = 0; i < levels; i++)
         fmpz_poly_clear(power_array[i]);
     free(power_array);
