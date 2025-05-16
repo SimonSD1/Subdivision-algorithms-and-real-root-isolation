@@ -269,7 +269,6 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
     slong current_last_block_len = last_block_len;
     int iter = 0;
 
-    _fmpz_poly_remove_content_2exp(temp_poly->coeffs, temp_poly->length);
 
     while (iter < levels)
     {
@@ -294,7 +293,6 @@ void iterative_taylor_shift_precompute(fmpz_poly_t result, const fmpz_poly_t pol
         _fmpz_poly_mul(mul_res->coeffs, p1, current_last_block_len, binom_coeffs, current_len + 1);
         _fmpz_poly_add(res, p0, current_len, mul_res->coeffs, current_len + current_last_block_len);
 
-        _fmpz_poly_remove_content_2exp(temp_poly->coeffs, temp_poly->length);
 
         current_last_block_len += current_len;
         current_len *= 2;
