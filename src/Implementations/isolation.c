@@ -122,11 +122,11 @@ slong sign_changes_trunc(fmpz_poly_t poly)
 slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solutions, slong *nb_sol, fmpz_t temp, fmpz_poly_t *power_array, slong block_len, slong levels, fmpz_poly_t poly_temp, int trunc_true)
 {
   //fmpz_poly_set(poly_temp,pol);
-  //_fmpz_poly_remove_content_2exp(pol->coeffs, pol->length);
+  slong remove =_fmpz_poly_remove_content_2exp(pol->coeffs, pol->length);
 
-  printf("poly : ");
-  fmpz_poly_print_pretty(pol,"x");
-  printf("\n");
+  //printf("poly : ");
+  //fmpz_poly_print_pretty(pol,"x");
+  //printf("\n");
   //printf("poly temp : ");
   //fmpz_poly_print_pretty(poly_temp,"x");
   //printf("\n");
@@ -198,14 +198,14 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     return 0;
   }
 
-  fmpz_t c_transformed;
-  fmpz_init(c_transformed);
-  fmpz_mul_2exp(c_transformed, c, 1);
+  //fmpz_t c_transformed;
+  //fmpz_init(c_transformed);
+  fmpz_mul_2exp(c, c, 1);
 
   compose_divide_2_in_place(pol);
-  slong depth_left = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
+  slong depth_left = isolation_recursive(pol, c, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
 
-  fmpz_add_ui(c_transformed, c_transformed, 1);
+  fmpz_add_ui(c, c, 1);
   iterative_taylor_shift_precompute(pol, pol, power_array, block_len, levels);
 
   if (depth_left > 0)
@@ -214,8 +214,14 @@ slong isolation_recursive(fmpz_poly_t pol, fmpz_t c, slong k, solution *solution
     divide2exp_coeff_in_place(pol, (pol->length - 1) * depth_left);
   }
 
-  depth_right = isolation_recursive(pol, c_transformed, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
-  fmpz_clear(c_transformed);
+  
+  depth_right = isolation_recursive(pol, c, k + 1, solutions, nb_sol, temp, power_array, block_len, levels, poly_temp, trunc_true);
+  
+  fmpz_add_si(c,c,-1);
+  fmpz_tdiv_q_2exp(c,c,1);
+  //fmpz_clear(c_transformed);
+
+  fmpz_poly_scalar_mul_2exp(pol,pol,remove);
 
   return 1 + depth_right;
 }
@@ -238,7 +244,6 @@ void isolation_pos(fmpz_poly_t pol, solution *solutions, slong *nb_sol, slong *u
   fmpz_t zero, temp;
   fmpz_init_set_ui(zero, 0);
   fmpz_init(temp);
-
   isolation_recursive(compressed_pol, zero, 0, solutions, nb_sol, temp, power_array, block_len, levels, temp_poly, trunc_true);
 
   fmpz_poly_clear(compressed_pol);
