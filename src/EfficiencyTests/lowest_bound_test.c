@@ -36,7 +36,7 @@ int main() {
 
     // To track the smallest bound and its type (using enum)
     fmpz_t smallestBound[101];
-    bound_type_t smallestBoundType[101];
+    //bound_type_t smallestBoundType[101];
 
     fmpz_poly_init(poly);
     fmpz_init(fixedVariable);

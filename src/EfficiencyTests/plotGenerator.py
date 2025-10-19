@@ -41,7 +41,7 @@ def plotGenerator(file_path, timeOrMem, fixedVariable):
 
     # second argument when calling the function should be "time" or "memory"
     if (timeOrMem == "time") :
-        plt.ylabel('Time (ticks)')
+        plt.ylabel('Time (μs)')
     else :
         plt.ylabel('Memory (bytes)')
 

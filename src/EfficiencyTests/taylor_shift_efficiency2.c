@@ -28,29 +28,11 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     fmpz_poly_init(result);
     double *tabTpsFlint = malloc(sizeof(double) * (maxLen));
     double *tabTpsImplem = malloc(sizeof(double) * (maxLen));
+    double *tabTpsHorner = malloc(sizeof(double) * (maxLen));
     struct timespec start, end;
     fmpz_poly_t* power_array = NULL;
     slong block_len, levels;
 
-    for (slong i = 0; i < maxLen; i++)
-    {
-        printf("poly flint %ld\n", i);
-        flint_cleanup();
-        readPolyDATA(poly, fixedVariable, i);
-
-        tabTpsFlint[i] = 0;
-        //On effectue une moyenne sur NB_RUNS mesures
-        for(int k=0; k<NB_RUNS; k++) {
-            flint_set_num_threads(1);
-
-            clock_gettime(CLOCK_MONOTONIC, &start);
-            fmpz_poly_taylor_shift_divconquer(result, poly, shift);
-            clock_gettime(CLOCK_MONOTONIC, &end);
-            tabTpsFlint[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;         
-        }
-        tabTpsFlint[i] /= NB_RUNS;
-    }
-    printf("\n//////////////////////\n");
     for (slong i = 0; i < maxLen; i++)
     {
         printf("poly iterative %ld\n", i);
@@ -70,7 +52,42 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
         tabTpsImplem[i] /= NB_RUNS;
         free_precompute_table(power_array, levels);
     }
-    printf("\n");
+    for (slong i = 0; i < maxLen; i++)
+    {
+        printf("poly flint %ld\n", i);
+        flint_cleanup();
+        readPolyDATA(poly, fixedVariable, i);
+
+        tabTpsFlint[i] = 0;
+        //On effectue une moyenne sur NB_RUNS mesures
+        for(int k=0; k<NB_RUNS; k++) {
+            flint_set_num_threads(1);
+
+            clock_gettime(CLOCK_MONOTONIC, &start);
+            fmpz_poly_taylor_shift_divconquer(result, poly, shift);
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            tabTpsFlint[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;         
+        }
+        tabTpsFlint[i] /= NB_RUNS;
+    }
+    /*for (slong i = 0; i < maxLen; i++)
+    {
+        printf("poly Horner %ld\n", i);
+        flint_cleanup();
+        readPolyDATA(poly, fixedVariable, i);
+
+        tabTpsFlint[i] = 0;
+        //On effectue une moyenne sur NB_RUNS mesures
+        for(int k=0; k<NB_RUNS; k++) {
+            flint_set_num_threads(1);
+
+            clock_gettime(CLOCK_MONOTONIC, &start);
+            fmpz_poly_taylor_shift_horner(result, poly, shift);
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            tabTpsHorner[i] += (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_nsec - start.tv_nsec) / 1e3;         
+        }
+        tabTpsHorner[i] /= NB_RUNS;
+    }*/
 
 
     // Title of the plot
@@ -84,6 +101,8 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     fprintTab(tabTpsFlint, maxLen, fileResults);
     fprintf(fileResults, "Implem Iterative\n");
     fprintTab(tabTpsImplem, maxLen, fileResults);
+    //fprintf(fileResults, "Horner (flint)\n");
+    //fprintTab(tabTpsHorner, maxLen, fileResults);
 
 
     fmpz_poly_clear(result);
@@ -91,6 +110,7 @@ void benchmark_TS_DivConq(slong maxLen, int fixedVariable, FILE *fileResults)
     fmpz_clear(shift);
     free(tabTpsFlint);
     free(tabTpsImplem);
+    free(tabTpsHorner);
 }
 
 
@@ -106,18 +126,7 @@ int main(int argc, char *argv[])
         mkdir("src/EfficiencyTests/Results/TaylorShift", 0777);
 
         FILE *fileResults;
-        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree2Bis.txt", "w");
-        if (fileResults == NULL)
-        {
-            printf("The file is not opened. The program will "
-                "now exit.\n");
-            exit(0);
-        }
-        benchmark_TS_DivConq(maxLen, 0, fileResults);
-        fclose(fileResults);
-
-
-        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize2Bis.txt", "w");
+        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize3.txt", "w");
         if (fileResults == NULL)
         {
             printf("The file is not opened. The program will "
@@ -126,10 +135,22 @@ int main(int argc, char *argv[])
         }
         benchmark_TS_DivConq(maxLen, 1, fileResults);
         fclose(fileResults);
+
+
+        
+        fileResults = fopen("src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree3.txt", "w");
+        if (fileResults == NULL)
+        {
+            printf("The file is not opened. The program will "
+                "now exit.\n");
+            exit(0);
+        }
+        benchmark_TS_DivConq(maxLen, 0, fileResults);
+        fclose(fileResults);        
     }
 
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree2Bis.txt 'time' 0");
-    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize2Bis.txt 'time' 1");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingDegree3.txt 'time' 0");
+    system("python3 src/EfficiencyTests/plotGenerator.py src/EfficiencyTests/Results/TaylorShift/TaylorShift_ChangingCoeffSize3.txt 'time' 1");
 
 
 

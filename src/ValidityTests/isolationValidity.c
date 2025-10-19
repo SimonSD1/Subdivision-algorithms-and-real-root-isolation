@@ -72,7 +72,7 @@ int main(void)
     fmpz_t temp;
     fmpz_init(temp);
 
-    isolation(pol, &solutions, &nb_sol, &nb_neg_sol, &upper_power_of_two_pos, &upper_power_of_two_neg);
+    isolation(pol, &solutions, &nb_sol, &nb_neg_sol, &upper_power_of_two_pos, &upper_power_of_two_neg, 1);
     printf("Isolated solutions: %ld //////// ", nb_sol);
 
     int nb_maple_roots = 0;

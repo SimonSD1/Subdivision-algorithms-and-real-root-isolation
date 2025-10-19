@@ -9,7 +9,7 @@
 #include "../HeaderFiles/descartes.h"
 #include "../HeaderFiles/isolation.h"
 
-int main(int argc, char const *argv[])
+int main(/*int argc, char const *argv[]*/)
 {
     fmpz_poly_t poly;
 

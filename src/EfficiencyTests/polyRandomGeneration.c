@@ -61,6 +61,9 @@ void writePolyFile(slong degree, flint_bitcnt_t coeff_size, int fixedVariable, i
 
 
 int main() {
+    struct timespec start_ts, end_ts;
+    clock_gettime(CLOCK_MONOTONIC, &start_ts);
+
     mkdir("DATA/Poly_ChangingDegree", 0777);
     mkdir("DATA/Poly_ChangingCoeffSize", 0777);
 
@@ -82,6 +85,12 @@ int main() {
         writePolyFile(fixedDegree, i, 1, j);
         j++;
     }
+
+
+    clock_gettime(CLOCK_MONOTONIC, &end_ts);
+    double elapsed_time = (end_ts.tv_sec - start_ts.tv_sec) + (double)(end_ts.tv_nsec - start_ts.tv_nsec) / 1000000000.0;
+    printf("Time taken to generate database : %f seconds\n", elapsed_time);
+
 
     return 0;
 }

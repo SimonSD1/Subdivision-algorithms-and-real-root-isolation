@@ -18,14 +18,9 @@ int main(void)
     fmpz_poly_t pol;
     fmpz_poly_init(pol);
     
-    readPolyDATA(pol, 1, 1);
-
-    //truncate_coefficients(pol,pol,7000);
-
-    fmpz_poly_print_pretty(pol,"x");
-
-    printf("\n");
-    printf("degree = %ld",pol->length);
+    //readPolyDATA(pol, 0, 1);
+    fmpz_poly_set_str(pol, "3  3 -4 1");
+    fmpz_poly_print_pretty(pol, "x");
 
     slong nb_sol, nb_neg_sol;
     solution *solutions = NULL;
@@ -37,7 +32,7 @@ int main(void)
     fmpz_t temp;
     fmpz_init(temp);
 
-    isolation(pol, &solutions, &nb_sol, &nb_neg_sol, &upper_power_of_two_pos, &upper_power_of_two_neg);
+    isolation(pol, &solutions, &nb_sol, &nb_neg_sol, &upper_power_of_two_pos, &upper_power_of_two_neg, 1);
     printf("Isolated solutions: %ld //////// ", nb_sol);
 
     for (int i=nb_neg_sol-1; i>=0; i--) //we print negative roots intervals first

@@ -10,6 +10,13 @@ VALIDITY_DIR = $(SRC_DIR)/ValidityTests
 EFFICIENCY_DIR = $(SRC_DIR)/EfficiencyTests
 OBJ_DIR = $(SRC_DIR)/obj
 BIN_DIR = $(SRC_DIR)/bin
+DATA_DIR = DATA
+
+# Répertoires de données à nettoyer
+DATA_DIRS = $(DATA_DIR)/Poly_ChangingCoeffSize \
+            $(DATA_DIR)/Poly_ChangingDegree \
+            $(DATA_DIR)/Precomputation_DivConq
+
 
 # Fichiers d'implémentation
 IMPL_FILES = $(wildcard $(IMPL_DIR)/*.c)
@@ -45,6 +52,20 @@ $(BIN_DIR)/%: $(VALIDITY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
 $(BIN_DIR)/%: $(EFFICIENCY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $< $(IMPL_OBJECTS) $(LIBS) -o $@
 
-# Nettoyage
+# Nettoyage des exécutables
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Nettoyage des bases de données
+# Utilise 'rm -f' après un cd pour supprimer de manière forcée le contenu, ce qui est plus robuste.
+clean_database:
+	@echo "Nettoyage des fichiers de données..."
+	@for dir in $(DATA_DIRS); do \
+		if [ -d "$$dir" ]; then \
+			echo "Nettoyage du répertoire $$dir..."; \
+			rm -f "$$dir"/*; \
+			echo "Contenu supprimé de $$dir"; \
+		else \
+			echo "Le répertoire $$dir n'existe pas, ignoré."; \
+		fi \
+	done

@@ -65,3 +65,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+# Ignore database (heavy)
+DATA/Poly_ChangingCoeffSize/*
+DATA/Poly_ChangingDegree/*
+DATA/Precomputation_DivConq/*
+
+# Keep empty foldersfor cloning
+!DATA/Poly_ChangingCoeffSize/.gitkeep
+!DATA/Poly_ChangingDegree/.gitkeep
+!DATA/Precomputation_DivConq/.gitkeep
