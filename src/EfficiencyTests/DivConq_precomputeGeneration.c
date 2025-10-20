@@ -115,12 +115,14 @@ void write_x_plus_1_power(slong maxSize) {
 
 
 int main() {
-    clock_t start = clock();
-    write_x_plus_1_power(14);       //because the sizes of our test polynomial database goes up to 2**15
-    clock_t end = clock();
-    double elapsed_time = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Time taken for naive: %f seconds\n", elapsed_time);
+    struct timespec start_ts, end_ts;
+    clock_gettime(CLOCK_MONOTONIC, &start_ts);
 
+    write_x_plus_1_power(14);       //because the sizes of our test polynomial database goes up to 2**15
+    
+    clock_gettime(CLOCK_MONOTONIC, &end_ts);
+    double elapsed_time = (end_ts.tv_sec - start_ts.tv_sec) + (double)(end_ts.tv_nsec - start_ts.tv_nsec) / 1000000000.0;
+    printf("Time taken for naive : %f seconds\n", elapsed_time);
     /*start = clock();
     write_x_plus_1_power_Newton(14);
     end = clock();
