@@ -67,6 +67,33 @@ Mkfile.old
 dkms.conf
 
 
+
+
+# Executables
+/boundValidity
+/descartesValidity
+/isolationValidity
+/manualTestIsol
+/taylorShiftValidity
+/testTPS
+/testTronc
+/test_iso_base
+/DivConq_precomputeGeneration
+/boundManualTest
+/boundTest
+/descartesTest
+/evaluateTest
+/flintMultTest
+/lowest_bound_test
+/mult_x_plus_one_test
+/polyRandomGeneration
+/taylor_shift_efficiency
+/taylor_shift_efficiency2
+/test_pre_computation
+
+
+
+
 # Ignore database (heavy)
 DATA/Poly_ChangingCoeffSize/*
 DATA/Poly_ChangingDegree/*

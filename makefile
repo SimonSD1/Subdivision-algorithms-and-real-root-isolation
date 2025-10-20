@@ -5,14 +5,14 @@ LIBS = $(shell pkg-config --libs flint) -lmpfr -lgmp
 
 # Répertoires
 SRC_DIR = src
+BIN_DIR = $(SRC_DIR)/bin				# Pour fichiers temporaires crées par les fonctions test
 IMPL_DIR = $(SRC_DIR)/Implementations
 VALIDITY_DIR = $(SRC_DIR)/ValidityTests
 EFFICIENCY_DIR = $(SRC_DIR)/EfficiencyTests
 OBJ_DIR = $(SRC_DIR)/obj
-BIN_DIR = $(SRC_DIR)/bin
 DATA_DIR = DATA
 
-# Répertoires de données à nettoyer
+# Répertoires de database à clean
 DATA_DIRS = $(DATA_DIR)/Poly_ChangingCoeffSize \
             $(DATA_DIR)/Poly_ChangingDegree \
             $(DATA_DIR)/Precomputation_DivConq
@@ -26,40 +26,50 @@ IMPL_OBJECTS = $(IMPL_FILES:$(IMPL_DIR)/%.c=$(OBJ_DIR)/%.o)
 VALIDITY_TESTS = $(wildcard $(VALIDITY_DIR)/*.c)
 EFFICIENCY_TESTS = $(wildcard $(EFFICIENCY_DIR)/*.c)
 
-# Exécutables de test
-VALIDITY_EXECS = $(VALIDITY_TESTS:$(VALIDITY_DIR)/%.c=$(BIN_DIR)/%)
-EFFICIENCY_EXECS = $(EFFICIENCY_TESTS:$(EFFICIENCY_DIR)/%.c=$(BIN_DIR)/%)
+# Exécutables de test (produits dans le répertoire courant)
+VALIDITY_EXECS = $(VALIDITY_TESTS:$(VALIDITY_DIR)/%.c=%)
+EFFICIENCY_EXECS = $(EFFICIENCY_TESTS:$(EFFICIENCY_DIR)/%.c=%)
+
+# Liste complète des exécutables pour le nettoyage
+CLEAN_EXECS = $(VALIDITY_EXECS) $(EFFICIENCY_EXECS)
+
 
 # Cibles principales
 all: validity efficiency
 
-validity: $(VALIDITY_EXECS)
+# Cibles pour compiler tous les tests de validité et d'efficacité
+validity: $(BIN_DIR) $(VALIDITY_EXECS)
+efficiency: $(BIN_DIR) $(EFFICIENCY_EXECS)
 
-efficiency: $(EFFICIENCY_EXECS)
 
-# Création des dossiers nécessaires
-$(OBJ_DIR) $(BIN_DIR):
+# Création du dossier src/bin
+$(BIN_DIR):
 	mkdir -p $@
 
-# Compilation des fichiers d'implémentation en .o
+# Création du dossier obj/
+$(OBJ_DIR):
+	mkdir -p $@
+
+
+
+# Compilation des fichiers d'implémentation .o
 $(OBJ_DIR)/%.o: $(IMPL_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compilation des fichiers de test en exécutables dans bin/
-$(BIN_DIR)/%: $(VALIDITY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
+%: $(VALIDITY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $< $(IMPL_OBJECTS) $(LIBS) -o $@
 
-$(BIN_DIR)/%: $(EFFICIENCY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
+%: $(EFFICIENCY_DIR)/%.c $(IMPL_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $< $(IMPL_OBJECTS) $(LIBS) -o $@
 
-# Nettoyage des exécutables
+
+
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR)
+	rm -rf $(BIN_DIR)
+	rm -f $(CLEAN_EXECS)
 
-# Nettoyage des bases de données
-# Utilise 'rm -f' après un cd pour supprimer de manière forcée le contenu, ce qui est plus robuste.
 clean_database:
-	@echo "Nettoyage des fichiers de données..."
 	@for dir in $(DATA_DIRS); do \
 		if [ -d "$$dir" ]; then \
 			echo "Nettoyage du répertoire $$dir..."; \
@@ -69,3 +79,7 @@ clean_database:
 			echo "Le répertoire $$dir n'existe pas, ignoré."; \
 		fi \
 	done
+
+
+# Rend les cibles non-fichiers
+.PHONY: all validity efficiency clean clean_database
