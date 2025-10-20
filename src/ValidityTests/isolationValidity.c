@@ -36,8 +36,6 @@ int run_maple_script() {
 
 int main(void)
 {
-    /////////////////// Execute the testIsolation.mw first //////////////////////
-
     // global variable
     fmpz_init_set_ui(FMPZ_ONE, 1);
 
