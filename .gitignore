@@ -99,7 +99,7 @@ DATA/Poly_ChangingCoeffSize/*
 DATA/Poly_ChangingDegree/*
 DATA/Precomputation_DivConq/*
 
-# Keep empty foldersfor cloning
+# Keep empty folders for cloning
 !DATA/Poly_ChangingCoeffSize/.gitkeep
 !DATA/Poly_ChangingDegree/.gitkeep
 !DATA/Precomputation_DivConq/.gitkeep
