@@ -10,7 +10,7 @@ To compile the project (from root directory) :
 ```bash
 make
 ```
-- The above command will compile all .c files of the project, and provide one executable per files containing a main() function.    
+- The above command will compile all .c files of the project, and provide one executable per file containing a main() function.    
 - All executables will be located in the root directory.  
 
 You can also compile and create a single executable from a file *fileToExecute.c* :
