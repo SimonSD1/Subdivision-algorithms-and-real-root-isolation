@@ -1,6 +1,10 @@
 # CCA-project : Subdivision algorithms and real root isolation
 Simon Sepiol-Duchemin, Joshua Setia
 
+## About the project
+The goal of this project is to implement a fully optimized bisection algorithm that isolates the real roots of univariate polynomials with real coefficients. To learn more about the conception of this algorithm, you can view the project report and presentation slides located in the folder */Reports*.
+
+
 ## Compilation and Execution    
 To compile the project (from root directory) :  
 ```bash
