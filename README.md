@@ -2,7 +2,8 @@
 Simon Sepiol-Duchemin, Joshua Setia
 
 ## About the project
-The goal of this project is to implement a fully optimized bisection algorithm that isolates the real roots of univariate polynomials with real coefficients. To learn more about the conception of this algorithm, you can view the project report and presentation slides located in the folder */Reports*.
+The goal of this project is to implement a fully optimized bisection algorithm that isolates the real roots of univariate polynomials with real coefficients. To learn more about the conception of this algorithm, you can view the project report and presentation slides located in the folder */Reports*.  
+This project uses the C library [FLINT](https://flintlib.org/), which is designed for number theory.
 
 
 ## Compilation and Execution    
